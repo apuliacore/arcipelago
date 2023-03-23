@@ -2,7 +2,7 @@ import sqlite3
 import datetime
 
 
-def init_db():
+def init_db(dummy=False):
 	db_connection = sqlite3.connect(
 		"arcipelago.db",
 		detect_types=sqlite3.PARSE_DECLTYPES
@@ -13,8 +13,9 @@ def init_db():
 	with open('schema.sql', 'rb') as f:
 		cursor.executescript(f.read().decode('utf8'))
 
-	with open('data.sql', 'rb') as f:
-		cursor.executescript(f.read().decode('utf8'))
+	if dummy:
+		with open('dummy.sql', 'rb') as f:
+			cursor.executescript(f.read().decode('utf8'))
 
 	db_connection.close()
 
