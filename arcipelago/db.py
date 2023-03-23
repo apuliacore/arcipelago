@@ -4,7 +4,7 @@ import datetime
 
 def init_db():
 	db_connection = sqlite3.connect(
-		"apuliacore.db",
+		"arcipelago.db",
 		detect_types=sqlite3.PARSE_DECLTYPES
 	)	
 
@@ -21,7 +21,7 @@ def init_db():
 
 def get_connection():
 	return sqlite3.connect(
-			"apuliacore.db",
+			"arcipelago.db",
 			detect_types=sqlite3.PARSE_DECLTYPES
 		)
 
@@ -92,7 +92,7 @@ def get_event_from_hash(event_hash: str):
 	    return str(hash("".join([name, venue])))
 
 	db_connection = sqlite3.connect(
-			"apuliacore.db",
+			"arcipelago.db",
 			detect_types=sqlite3.PARSE_DECLTYPES
 		)
 	db_connection.create_function("get_event_hash", 2, get_event_hash)
