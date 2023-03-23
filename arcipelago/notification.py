@@ -1,6 +1,6 @@
 import datetime
 import telegram
-from config import apuliacore_channel, apuliacore_group, STAGING 
+from config import main_channel, STAGING 
 from db import get_events_next_n_days_not_published, set_published, get_events_in_date
 from event import Event
 from extra.gcalendar import add_event_to_gcalendar
@@ -31,7 +31,7 @@ def daily_events_callback(context):
     now = datetime.datetime.now()
     todays_events = [Event().load_from_res(e) for e in get_events_in_date(now)]
     if len(todays_events) > 0:
-        context.bot.send_message(apuliacore_channel, "\n\n".join([f"Eventi di oggi {now.strftime('%d.%m.%Y')}"] + [event.html(short=True) for event in todays_events]),
+        context.bot.send_message(main_channel, "\n\n".join([f"Eventi di oggi {now.strftime('%d.%m.%Y')}"] + [event.html(short=True) for event in todays_events]),
                                   parse_mode=telegram.ParseMode.HTML)
 
 
@@ -49,7 +49,7 @@ def check_event_will_get_published(event):
 
 
 def publish_event(bot, event):
-    bot.send_photo(chat_id=apuliacore_channel,
+    bot.send_photo(chat_id=main_channel,
                     photo=open(f'locandine/{event.id}.jpg', 'rb'),
                     caption=event.html(),
                     parse_mode=telegram.ParseMode.HTML)
