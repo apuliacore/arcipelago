@@ -15,6 +15,7 @@ from event import Event
 from config import chatbot_token, notification_channel, daily_update_interval
 from conversations.create_event import event_conv_handler, callback_query_handler
 from conversations.edit_event import edit_conv_handler
+from conversations import text
 from notification import daily_publication_callback, get_next_hour_datetime, daily_events_callback
 
 
@@ -23,9 +24,7 @@ TOKEN = chatbot_token
 
 def start(update, context) -> int:
     """Starts the conversation."""
-    update.message.reply_text(
-        "Ciao! Sono il bot di @apuliacore, invia /evento per suggerire un nuovo evento o /oggi per conoscere gli eventi di oggi."
-    )
+    update.message.reply_text(text.welcome)
     return ConversationHandler.END
 
 
@@ -37,7 +36,7 @@ def oggi(update, context) -> int:
         update.message.reply_text("\n\n".join([f"Eventi di oggi {now.strftime('%d.%m.%Y')}"] + [event.html(short=True) for event in todays_events]),
                                   parse_mode=telegram.ParseMode.HTML)
     else:
-        update.message.reply_text("Sembra che non ci siano eventi registrati per oggi. Se vuoi puoi suggerirne uno con /evento.")
+        update.message.reply_text(text.no_event)
     return ConversationHandler.END
 
 
@@ -52,23 +51,23 @@ def giorno(update, context) -> int:
             update.message.reply_text("\n\n".join([f"Eventi di oggi {date_selected.strftime('%d.%m.%Y')}"] + [event.html(short=True) for event in selected_date_events]),
                                     parse_mode=telegram.ParseMode.HTML)
         else:
-            update.message.reply_text("Sembra che non ci siano eventi registrati per oggi. Se vuoi puoi suggerirne uno con /evento.")
+            update.message.reply_text(text.no_event)
     return ConversationHandler.END
 
 
 def feedback(update, context) -> int:
     """Sends feedback message to admins group."""
     if update.message.text.strip() == "/feedback":
-        update.message.reply_text("Scrivi il tuo messaggio dopo il comando, ad esempio così: /feedback Ciao!")
+        update.message.reply_text(text.help_feedback)
     else:
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=update.message.text[10:])
-        update.message.reply_text("Ok! Il tuo messaggio è stato inviato agli admin. Grazie!")
+        update.message.reply_text(text.ack_feedback_received)
     return ConversationHandler.END
 
 
 def cancel(update, context) -> int:
     """Cancels and ends the conversation."""
-    update.message.reply_text("Ok, operazione annullata.")
+    update.message.reply_text(text.ack_canceled_op)
     return ConversationHandler.END
 
 

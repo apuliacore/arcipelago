@@ -3,6 +3,7 @@ from telegram import ReplyKeyboardMarkup
 from telegram.ext import ConversationHandler, filters, CommandHandler, MessageHandler
 from db import edit_event, get_event_from_hash
 from event import Event
+from conversations import text
 
 
 (EDIT2, EDIT3) = range(2)
@@ -13,7 +14,7 @@ editable_fields_keyboard = [[field] for field in editable_fields]
 def edit(update, context) -> int:
     """Allows the user to modify information of an event."""
     if update.message.text.strip() == "/modifica":
-        update.message.reply_text("Invia il codice dell'evento dopo il comando, ad esempio così: /modifica codice-evento")
+        update.message.reply_text(text.help_edit)
         return ConversationHandler.END
     else:
         event_hash = update.message.text.strip()[10:]
@@ -22,27 +23,25 @@ def edit(update, context) -> int:
         if event_res:
             event.load_from_res(event_res[0])
             context.user_data['event_to_edit'] = event
-            update.message.reply_text(f"Ok! Vuoi modificare questo evento:")
+            update.message.reply_text(text.ack_edit_event)
             update.message.reply_text(event.html(), parse_mode=telegram.ParseMode.HTML)
-            update.message.reply_text("Cosa vuoi modificare?", reply_markup=ReplyKeyboardMarkup(
+            update.message.reply_text(text.ask_edit_field, reply_markup=ReplyKeyboardMarkup(
                 editable_fields_keyboard, one_time_keyboard=True, input_field_placeholder="Scegli cosa modificare"))
             return EDIT2
         else:
-            update.message.reply_text("Non è stato trovato nessun evento con questo codice. "
-                "L'evento potrebbe essere passato, oppure il codice potrebbe non essere più valido. "
-                "Se hai un dubbio contattaci!")
+            update.message.reply_text(text.edit_event_failure)
             return ConversationHandler.END
 
 
 def edit_field(update, context) -> int:
     """Modify specific information for an event."""
     if update.message.text not in editable_fields:
-        update.message.reply_text("Il campo che hai scelto non esiste. Scegline uno usando la tastiera qui sotto:",
+        update.message.reply_text(text.help_edit_field,
             reply_markup=ReplyKeyboardMarkup(editable_fields_keyboard, one_time_keyboard=True, input_field_placeholder="Scegli cosa modificare"))
         return EDIT2
     else:
         context.user_data['field_to_edit'] = update.message.text
-        update.message.reply_text("Ok, invia il nuovo valore: [se è un orario usa il formato hh:mm, se è una data gg.mm.aaaa]")
+        update.message.reply_text(text.ask_new_value_field)
         return EDIT3
 
 
@@ -91,7 +90,7 @@ def confirm_edit_field(update, context) -> int:
     }
     db_field = field_to_db_name[field]
     edit_event(event.id, db_field, updated_value)
-    update.message.reply_text(f"Evento modificato.")
+    update.message.reply_text(text.ack_event_modified)
     update.message.reply_text(event.html(), parse_mode=telegram.ParseMode.HTML)
     update.message.reply_text(f"Il nuovo codice del tuo evento è <code>{event.hash()}</code>.", parse_mode=telegram.ParseMode.HTML)
 
@@ -100,7 +99,7 @@ def confirm_edit_field(update, context) -> int:
 
 def cancel(update, context) -> int:
     """Cancels and ends the conversation."""
-    update.message.reply_text("Ok, operazione annullata.")
+    update.message.reply_text(text.ack_canceled_op)
     return ConversationHandler.END
 
 

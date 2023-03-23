@@ -6,6 +6,7 @@ from config import notification_channel, authorized_users, chatbot_token
 from db import insert_event, set_confirmed, get_event_from_id
 from event import category2emoji, Event, check_events_collision, BadEventAttrError
 from notification import check_event_will_get_published, publish_event
+from conversations import text
 
 
 (LOCANDINA, DATA_INIZIO, DATA_FINE, DATA_FINE_2, 
@@ -15,9 +16,7 @@ TOKEN = chatbot_token
 
 def evento(update, context) -> int:
     """Starts adding an event asking for picture of event"""
-    update.message.reply_text(
-        "Bene! Per iniziare invia la locandina dell'evento. "
-        "Invia /cancel in qualsiasi momento per interrompere la conversazione.")
+    update.message.reply_text(text.poster)
     context.user_data['event'] = Event()
     return LOCANDINA
 
@@ -26,7 +25,7 @@ def locandina(update, context) -> int:
     """Stores the photo and asks for a date."""
     photo_file = update.message.photo[-1].file_id
     context.user_data['locandina'] = photo_file
-    update.message.reply_text("Come si chiama l'evento?")
+    update.message.reply_text(text.ask_event_name)
     return TITOLO
 
 
@@ -34,7 +33,7 @@ def titolo(update, context) -> int:
     """Asks for description of event"""
     try:
         context.user_data['event'].name = update.message.text
-        update.message.reply_text("Ora inserisci il luogo dell'evento: [ad esempio: Teatro Petruzzelli, Bari]")
+        update.message.reply_text(text.ask_event_venue)
         return LOCATION
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
@@ -45,7 +44,7 @@ def location(update, context) -> int:
     """Asks for title of event"""
     try:
         context.user_data['event'].venue = update.message.text
-        update.message.reply_text("Perfetto! Ora inserisci la data di inizio evento: [formato gg.mm.aaaa]")
+        update.message.reply_text(text.ask_start_date)
         return DATA_INIZIO
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
@@ -56,7 +55,7 @@ def data_inizio(update, context) -> int:
     """Stores date and asks if ending date."""
     try:
         context.user_data['event'].start_date = update.message.text
-        update.message.reply_text("A che ora inizia l'evento? [formato hh:mm]")
+        update.message.reply_text(text.ask_start_time)
         return ORARIO_INIZIO
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
@@ -69,13 +68,13 @@ def orario_inizio(update, context) -> int:
         context.user_data['event'].start_time = update.message.text
         colliding_event = check_events_collision(context.user_data['event'])
         if colliding_event is not None:
-            update.message.reply_text("Un evento simile al tuo è già stato proposto:")
+            update.message.reply_text(text.similar_event)
             update.message.reply_text(colliding_event.html(), parse_mode=telegram.ParseMode.HTML)
-            update.message.reply_text("Si tratta dello stesso evento?", 
+            update.message.reply_text(text.ask_same_event, 
             reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
             return ROUTE_SAME_EVENT
         else:
-            update.message.reply_text("Ok! L'evento ha una data di fine diversa da quella di inizio?", 
+            update.message.reply_text(text.ask_add_end_date, 
                 reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
             return DATA_FINE
     except BadEventAttrError as e:
@@ -87,17 +86,17 @@ def route_same_event(update, context) -> int:
     """Routes conversation based on whether the event is the same."""
     user_input = update.message.text.strip().lower()
     if user_input == 'sì':
-        update.message.reply_text("Ok allora, grazie lo stesso!")
+        update.message.reply_text(text.ack_same_event)
         return ConversationHandler.END
     elif user_input == 'no':
-        update.message.reply_text("Ok! L'evento ha una data di fine diversa da quella di inizio?", 
+        update.message.reply_text(text.ask_add_end_date, 
         reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
         return DATA_FINE
 
 
 def data_fine(update, context) -> int:
     """Asks for ending date."""
-    update.message.reply_text("Inserisci la data di fine evento: [formato gg.mm.aaaa]")
+    update.message.reply_text(text.ask_end_date)
     return DATA_FINE_2
 
 
@@ -105,7 +104,7 @@ def data_fine_2(update, context) -> int:
     """Stores ending date, asks for time"""
     try:
         context.user_data['event'].end_date = update.message.text
-        update.message.reply_text("A che ora finisce l'evento? [formato hh:mm]")
+        update.message.reply_text(text.ask_end_time)
         return ORARIO_FINE_2
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
@@ -113,14 +112,14 @@ def data_fine_2(update, context) -> int:
 
 
 def skip_data_fine(update, context) -> int:
-    update.message.reply_text("Vuoi inserire l'orario di fine evento?", 
+    update.message.reply_text(text.ask_add_end_time, 
         reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
     return ORARIO_FINE
 
 
 def orario_fine(update, content) -> int:
     """Asks end time"""
-    update.message.reply_text("A che ora finisce l'evento? [formato hh:mm]")
+    update.message.reply_text(text.ask_end_time)
     return ORARIO_FINE_2
     
 
@@ -128,7 +127,7 @@ def orario_fine_2(update, context) -> int:
     """stores end time and asks location"""
     try:
         context.user_data['event'].end_time = update.message.text
-        update.message.reply_text("Scegli una categoria per l'evento:",
+        update.message.reply_text(text.ask_category,
         reply_markup=ReplyKeyboardMarkup([[emoji + " " + category] for category, emoji in category2emoji.items()],
             one_time_keyboard=True, input_field_placeholder="Scegli una categoria..."))
         return CATEGORIA
@@ -139,7 +138,7 @@ def orario_fine_2(update, context) -> int:
 
 def skip_orario_fine(update, context) -> int:
     """Skips end time asks for location"""
-    update.message.reply_text("Scegli una categoria per l'evento:",
+    update.message.reply_text(text.ask_category,
     reply_markup=ReplyKeyboardMarkup([[emoji + " " + category] for category, emoji in category2emoji.items()],
         one_time_keyboard=True, input_field_placeholder="Scegli una categoria..."))
     return CATEGORIA
@@ -149,12 +148,12 @@ def categoria(update, context) -> int:
     """Choose one or more category for the event."""
     category = update.message.text[2:]
     if category not in category2emoji:
-        update.message.reply_text("La categoria che hai scelto non è tra quelle previste. Usa la tastiera preimpostata:",
+        update.message.reply_text(text.help_category,
             reply_markup=ReplyKeyboardMarkup([[emoji + " " + category] for category, emoji in category2emoji.items()],
                 one_time_keyboard=True, input_field_placeholder="Scegli una categoria..."))
         return CATEGORIA
     context.user_data['event'].categories = category
-    update.message.reply_text("Inserisci le info utili per l'evento (come link per acquistare biglietti, programmi, line-up, etc):")
+    update.message.reply_text(text.ask_description)
     return DESCRIZIONE
 
 
@@ -171,11 +170,11 @@ def descrizione(update, context) -> int:
             photo=context.user_data['locandina'],
             caption=context.user_data['event'].html(),
             parse_mode=telegram.ParseMode.HTML)
-        update.message.reply_text("Sei sicur* di voler consigliare quest'evento?", reply_markup=ReplyKeyboardMarkup(
+        update.message.reply_text(text.ask_confirm_send_event, reply_markup=ReplyKeyboardMarkup(
             [["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
         return CONFERMA
     except telegram.error.BadRequest:
-        update.message.reply_text("Si è verificato un errore con la generazione del messaggio :( \n Prova a cambiare leggermente la descrizione o il titolo o contatta i creatori del bot @luigijs e @shift97 per assistenza")
+        update.message.reply_text(text.send_event_failure)
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel,text=f"{primonome}, @{username} ha provato ad inviare un evento ma si è verificato un errore")
         print(traceback.format_exc())
         return ConversationHandler.END
@@ -197,7 +196,7 @@ def conferma(update, context) -> int:
                 parse_mode=telegram.ParseMode.HTML
             )
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {primonome}, @{username}.")
-        update.message.reply_text("L'evento è stato programmato per la pubblicazione. Grazie!")
+        update.message.reply_text(text.ack_event_accepted_admin)
         event_id = insert_event(event)
         update.message.reply_text(f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
             "Puoi usarlo con il comando /modifica per cambiare alcune informazioni sull'evento prima della pubblicazione.",
@@ -216,7 +215,7 @@ def conferma(update, context) -> int:
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text="Confermare?",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Sì', callback_data=f"{user_id} {event_id} 1"),
                                                 InlineKeyboardButton(text='No', callback_data=f"{user_id} {event_id} 0")]]))
-        update.message.reply_text("L'evento è stato inviato ai moderatori. Grazie per la richiesta!")
+        update.message.reply_text(text.ack_event_submitted)
 
     file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
     file_locandina.download(f'locandine/{event_id}.jpg')
@@ -225,7 +224,7 @@ def conferma(update, context) -> int:
 
 def cancel(update, context) -> int:
     """Cancels and ends the conversation."""
-    update.message.reply_text("Ok, operazione annullata.")
+    update.message.reply_text(text.ack_canceled_op)
     return ConversationHandler.END
 
 
@@ -266,7 +265,7 @@ def set_event_confirmation(update, context) -> None:
         set_confirmed(event_id)
         event = Event().load_from_res(get_event_from_id(event_id)[0])
         update.callback_query.edit_message_text(text=f"Evento confermato da {admin.first_name}, @{admin.username}.")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id, text=f"L'evento che hai proposto è stato accettato e programmato per la pubblicazione. Grazie!")
+        telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id, text=text.ack_event_accepted_user)
         telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id, text=f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
             "Puoi usarlo con il comando /modifica per cambiare alcune informazioni sull'evento prima della pubblicazione.",
             parse_mode=telegram.ParseMode.HTML)
@@ -275,10 +274,7 @@ def set_event_confirmation(update, context) -> None:
     else:
         update.callback_query.edit_message_text(text=f"Evento non confermato da {admin.first_name}, @{admin.username}.")
         telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id,
-            text=f"Ti ringraziamo per la tua proposta, ma abbiamo deciso di non condividere l'evento che hai suggerito. \
-                   Probabilmente non è il tipo di evento che ci proponiamo di promuovere, \
-                   puoi leggere di più a riguardo qui: www.apuliacore.org/manifesto.html. \
-                   Se vuoi parlare con noi, puoi scriverci nel gruppo Telegram o sulla nostra pagina Instagram.")
+            text=text.ack_event_not_accepted)
 
 
 callback_query_handler = CallbackQueryHandler(set_event_confirmation)
