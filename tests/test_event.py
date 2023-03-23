@@ -1,7 +1,7 @@
 """Test event related functions."""
 
-from apuliacore_bot.event import Event, check_events_collision
-from apuliacore_bot.db import insert_event, delete_event
+from arcipelago.event import Event, check_events_collision
+from arcipelago.db import insert_event, delete_event
 import datetime
 
 

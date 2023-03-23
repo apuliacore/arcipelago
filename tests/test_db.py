@@ -1,7 +1,7 @@
 import datetime
 
-from apuliacore_bot.db import insert_event, get_connection, set_published, get_events_next_n_days_not_published, get_events_in_date, get_event_from_id, get_event_from_hash, delete_event
-from apuliacore_bot.event import Event
+from arcipelago.db import insert_event, get_connection, set_published, get_events_next_n_days_not_published, get_events_in_date, get_event_from_id, get_event_from_hash, delete_event
+from arcipelago.event import Event
 
 
 def get_dummy_event():
