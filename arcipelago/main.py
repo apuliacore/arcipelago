@@ -13,8 +13,8 @@ import re
 from db import get_events_in_date
 from event import Event
 from config import chatbot_token, notification_channel, daily_update_interval
-from event_conv import event_conv_handler, callback_query_handler
-from edit_conv import edit_conv_handler
+from conversations.create_event import event_conv_handler, callback_query_handler
+from conversations.edit_event import edit_conv_handler
 from notification import daily_publication_callback, get_next_hour_datetime, daily_events_callback
 
 
