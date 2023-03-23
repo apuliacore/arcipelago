@@ -1,12 +1,13 @@
 import traceback
 import telegram
-from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, filters
 from config import notification_channel, authorized_users, chatbot_token
 from db import insert_event, set_confirmed, get_event_from_id
 from event import category2emoji, Event, check_events_collision, BadEventAttrError
 from notification import check_event_will_get_published, publish_event
 from conversations import text
+from conversations import keyboards as K
 
 
 (LOCANDINA, DATA_INIZIO, DATA_FINE, DATA_FINE_2, 
@@ -70,12 +71,10 @@ def orario_inizio(update, context) -> int:
         if colliding_event is not None:
             update.message.reply_text(text.similar_event)
             update.message.reply_text(colliding_event.html(), parse_mode=telegram.ParseMode.HTML)
-            update.message.reply_text(text.ask_same_event, 
-            reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
+            update.message.reply_text(text.ask_same_event, reply_markup=K.yes_or_no)
             return ROUTE_SAME_EVENT
         else:
-            update.message.reply_text(text.ask_add_end_date, 
-                reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
+            update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
             return DATA_FINE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
@@ -89,8 +88,7 @@ def route_same_event(update, context) -> int:
         update.message.reply_text(text.ack_same_event)
         return ConversationHandler.END
     elif user_input == 'no':
-        update.message.reply_text(text.ask_add_end_date, 
-        reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
+        update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
         return DATA_FINE
 
 
@@ -112,8 +110,7 @@ def data_fine_2(update, context) -> int:
 
 
 def skip_data_fine(update, context) -> int:
-    update.message.reply_text(text.ask_add_end_time, 
-        reply_markup=ReplyKeyboardMarkup([["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
+    update.message.reply_text(text.ask_add_end_time, reply_markup=K.yes_or_no)
     return ORARIO_FINE
 
 
@@ -127,9 +124,7 @@ def orario_fine_2(update, context) -> int:
     """stores end time and asks location"""
     try:
         context.user_data['event'].end_time = update.message.text
-        update.message.reply_text(text.ask_category,
-        reply_markup=ReplyKeyboardMarkup([[emoji + " " + category] for category, emoji in category2emoji.items()],
-            one_time_keyboard=True, input_field_placeholder="Scegli una categoria..."))
+        update.message.reply_text(text.ask_category, reply_markup=K.category)
         return CATEGORIA
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
@@ -138,9 +133,7 @@ def orario_fine_2(update, context) -> int:
 
 def skip_orario_fine(update, context) -> int:
     """Skips end time asks for location"""
-    update.message.reply_text(text.ask_category,
-    reply_markup=ReplyKeyboardMarkup([[emoji + " " + category] for category, emoji in category2emoji.items()],
-        one_time_keyboard=True, input_field_placeholder="Scegli una categoria..."))
+    update.message.reply_text(text.ask_category, reply_markup=K.category)
     return CATEGORIA
 
 
@@ -148,9 +141,7 @@ def categoria(update, context) -> int:
     """Choose one or more category for the event."""
     category = update.message.text[2:]
     if category not in category2emoji:
-        update.message.reply_text(text.help_category,
-            reply_markup=ReplyKeyboardMarkup([[emoji + " " + category] for category, emoji in category2emoji.items()],
-                one_time_keyboard=True, input_field_placeholder="Scegli una categoria..."))
+        update.message.reply_text(text.help_category, reply_markup=K.category)
         return CATEGORIA
     context.user_data['event'].categories = category
     update.message.reply_text(text.ask_description)
@@ -170,8 +161,7 @@ def descrizione(update, context) -> int:
             photo=context.user_data['locandina'],
             caption=context.user_data['event'].html(),
             parse_mode=telegram.ParseMode.HTML)
-        update.message.reply_text(text.ask_confirm_send_event, reply_markup=ReplyKeyboardMarkup(
-            [["Sì", "No"]], one_time_keyboard=True, input_field_placeholder="Sì o no?"))
+        update.message.reply_text(text.ask_confirm_send_event, reply_markup=K.yes_or_no)
         return CONFERMA
     except telegram.error.BadRequest:
         update.message.reply_text(text.send_event_failure)
@@ -212,7 +202,7 @@ def conferma(update, context) -> int:
             )
         event_id = insert_event(event)
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {primonome}, @{username}.")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text="Confermare?",
+        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=text.ask_confirm_publish_event,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Sì', callback_data=f"{user_id} {event_id} 1"),
                                                 InlineKeyboardButton(text='No', callback_data=f"{user_id} {event_id} 0")]]))
         update.message.reply_text(text.ack_event_submitted)
@@ -273,8 +263,7 @@ def set_event_confirmation(update, context) -> None:
             publish_event(telegram.Bot(token=TOKEN), event)
     else:
         update.callback_query.edit_message_text(text=f"Evento non confermato da {admin.first_name}, @{admin.username}.")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id,
-            text=text.ack_event_not_accepted)
+        telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id, text=text.ack_event_not_accepted)
 
 
 callback_query_handler = CallbackQueryHandler(set_event_confirmation)

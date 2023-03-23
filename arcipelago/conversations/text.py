@@ -24,6 +24,7 @@ ask_description = "Inserisci le info utili per l'evento (come link per acquistar
 ask_confirm_send_event = "Sei sicur* di voler consigliare quest'evento?"
 send_event_failure = "Si è verificato un errore con la generazione del messaggio :( \n Prova a cambiare leggermente la descrizione o il titolo o contatta i creatori del bot @luigijs e @shift97 per assistenza"
 ack_event_accepted_admin = "L'evento è stato programmato per la pubblicazione. Grazie!"
+ask_confirm_publish_event = "Confermare?"
 ack_event_accepted_user = "L'evento che hai proposto è stato accettato e programmato per la pubblicazione. Grazie!"
 ack_event_submitted = "L'evento è stato inviato ai moderatori. Grazie per la richiesta!"
 ack_event_not_accepted = "Ti ringraziamo per la tua proposta, ma abbiamo deciso di non condividere l'evento che hai suggerito. Probabilmente non è il tipo di evento che ci proponiamo di promuovere, puoi leggere di più a riguardo qui: www.apuliacore.org/manifesto.html. Se vuoi parlare con noi, puoi scriverci nel gruppo Telegram o sulla nostra pagina Instagram."

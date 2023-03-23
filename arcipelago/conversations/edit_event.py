@@ -1,14 +1,12 @@
 import telegram
-from telegram import ReplyKeyboardMarkup
 from telegram.ext import ConversationHandler, filters, CommandHandler, MessageHandler
 from db import edit_event, get_event_from_hash
 from event import Event
 from conversations import text
+from conversations import keyboards as K
 
 
 (EDIT2, EDIT3) = range(2)
-editable_fields = ["Nome", "Luogo", "Data inizio", "Data fine", "Ora inizio", "Ora fine", "Descrizione"]
-editable_fields_keyboard = [[field] for field in editable_fields]
 
 
 def edit(update, context) -> int:
@@ -25,8 +23,7 @@ def edit(update, context) -> int:
             context.user_data['event_to_edit'] = event
             update.message.reply_text(text.ack_edit_event)
             update.message.reply_text(event.html(), parse_mode=telegram.ParseMode.HTML)
-            update.message.reply_text(text.ask_edit_field, reply_markup=ReplyKeyboardMarkup(
-                editable_fields_keyboard, one_time_keyboard=True, input_field_placeholder="Scegli cosa modificare"))
+            update.message.reply_text(text.ask_edit_field, reply_markup=K.editable)
             return EDIT2
         else:
             update.message.reply_text(text.edit_event_failure)
@@ -36,8 +33,7 @@ def edit(update, context) -> int:
 def edit_field(update, context) -> int:
     """Modify specific information for an event."""
     if update.message.text not in editable_fields:
-        update.message.reply_text(text.help_edit_field,
-            reply_markup=ReplyKeyboardMarkup(editable_fields_keyboard, one_time_keyboard=True, input_field_placeholder="Scegli cosa modificare"))
+        update.message.reply_text(text.help_edit_field, reply_markup=K.editable)
         return EDIT2
     else:
         context.user_data['field_to_edit'] = update.message.text
