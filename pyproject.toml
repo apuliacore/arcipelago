@@ -6,7 +6,7 @@ authors = ["Flavio <flavio.petruzzellis@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 python-telegram-bot = "^13.14"
 
 [tool.poetry.group.dev.dependencies]
