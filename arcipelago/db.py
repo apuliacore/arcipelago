@@ -79,11 +79,11 @@ def get_id_name_venue_start_dt_future_events():
 		(datetime_now, )
 	)
 
-def get_events_in_date(date: datetime.datetime):
-	date_now = date.date()
+def get_events_in_date(event_datetime: datetime.datetime):
+	event_date = event_datetime.date()
 	return execute_select_query(
 		"SELECT * FROM event WHERE date(start_datetime) = ? and confirmed = True ORDER BY start_datetime",
-		(date_now,)
+		(event_date,)
 	)
 
 
