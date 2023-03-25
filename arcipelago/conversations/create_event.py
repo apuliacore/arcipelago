@@ -15,6 +15,7 @@ from conversations import keyboards as K
  LOCATION, TITOLO, CATEGORIA, DESCRIZIONE, CONFERMA, ROUTE_SAME_EVENT) = range(13)
 TOKEN = chatbot_token
 
+
 def evento(update, context) -> int:
     """Starts adding an event asking for picture of event"""
     update.message.reply_text(text.poster)
@@ -34,7 +35,7 @@ def titolo(update, context) -> int:
     """Asks for description of event"""
     try:
         context.user_data['event'].name = update.message.text
-        update.message.reply_text(text.ask_event_venue)
+        update.message.reply_text(text.ask_venue_name)
         return LOCATION
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
