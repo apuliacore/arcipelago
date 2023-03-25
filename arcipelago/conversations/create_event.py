@@ -42,7 +42,7 @@ def titolo(update, context) -> int:
         return TITOLO
 
 
-def location(update, context) -> int:
+def venue(update, context) -> int:
     """Asks for title of event"""
     try:
         context.user_data['event'].venue = update.message.text
@@ -232,7 +232,7 @@ event_conv_handler = ConversationHandler(
             ORARIO_FINE: [MessageHandler(filters.Filters.regex("Sì"), orario_fine),
                 MessageHandler(filters.Filters.regex("No"), skip_orario_fine)],
             ORARIO_FINE_2: [MessageHandler(filters.Filters.text, orario_fine_2)],
-            LOCATION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), location)],
+            LOCATION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), venue)],
             TITOLO: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), titolo)],
             CATEGORIA: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), categoria)],
             DESCRIZIONE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), descrizione)],
