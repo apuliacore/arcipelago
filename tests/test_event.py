@@ -34,7 +34,7 @@ def test_start_date_setter():
 
 def test_start_time_setter():
 	event = Event()
-	event.start_date = '13.12.2023'
+	event.start_date = datetime.datetime.now().date().strftime('%d.%m.%Y')
 
 	# wrong format
 	try:
@@ -55,7 +55,7 @@ def test_start_time_setter():
 		assert 'type' in str(e)
 
 	# correct assignment
-	start_time = datetime.datetime.now().time()
+	start_time = (datetime.datetime.now() + datetime.timedelta(hours=1)).time()
 	event.start_time = start_time.strftime('%H:%M')
 	assert event.start_time.strftime('%H:%M') == start_time.strftime('%H:%M')
 
