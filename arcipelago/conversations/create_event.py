@@ -10,47 +10,47 @@ from conversations import text
 from conversations import keyboards as K
 
 
-(LOCANDINA, DATA_INIZIO, DATA_FINE, DATA_FINE_2, 
+(ASK_NAME, ASK_VENUE, ASK_START_DATE, DATA_INIZIO, DATA_FINE, DATA_FINE_2, 
  ORARIO_INIZIO, ORARIO_FINE, ORARIO_FINE_2, 
- LOCATION, TITOLO, CATEGORIA, DESCRIZIONE, CONFERMA, ROUTE_SAME_EVENT) = range(13)
+ CATEGORIA, DESCRIZIONE, CONFERMA, ROUTE_SAME_EVENT) = range(13)
 TOKEN = chatbot_token
 
 
-def evento(update, context) -> int:
+def ask_poster(update, context) -> int:
     """Starts adding an event asking for picture of event"""
     update.message.reply_text(text.poster)
     context.user_data['event'] = Event()
-    return LOCANDINA
+    return ASK_NAME
 
 
-def locandina(update, context) -> int:
-    """Stores the photo and asks for a date."""
+def ask_event_name(update, context) -> int:
+    """Stores the photo and asks event name."""
     photo_file = update.message.photo[-1].file_id
     context.user_data['locandina'] = photo_file
     update.message.reply_text(text.ask_event_name)
-    return TITOLO
+    return ASK_VENUE
 
 
-def titolo(update, context) -> int:
-    """Asks for description of event"""
+def ask_event_venue(update, context) -> int:
+    """Stores event name and asks event venue."""
     try:
         context.user_data['event'].name = update.message.text
         update.message.reply_text(text.ask_venue_name)
-        return LOCATION
+        return ASK_START_DATE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return TITOLO
+        return ASK_VENUE
 
 
-def venue(update, context) -> int:
-    """Asks for title of event"""
+def ask_start_date(update, context) -> int:
+    """Stores event venue and asks for start date."""
     try:
         context.user_data['event'].venue = update.message.text
         update.message.reply_text(text.ask_start_date)
         return DATA_INIZIO
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return LOCATION
+        return ASK_START_DATE
     
 
 def data_inizio(update, context) -> int:
@@ -220,9 +220,11 @@ def cancel(update, context) -> int:
 
 
 event_conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("evento", evento)],
+        entry_points=[CommandHandler("evento", ask_poster)],
         states={
-            LOCANDINA: [MessageHandler(filters.Filters.photo, locandina)],
+            ASK_NAME: [MessageHandler(filters.Filters.photo, ask_event_name)],
+            ASK_VENUE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_event_venue)],
+            ASK_START_DATE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_start_date)],
             DATA_INIZIO: [MessageHandler(filters.Filters.text, data_inizio)],
             DATA_FINE: [MessageHandler(filters.Filters.regex("Sì"), data_fine),
                 MessageHandler(filters.Filters.regex("No"), skip_data_fine)],
@@ -232,8 +234,6 @@ event_conv_handler = ConversationHandler(
             ORARIO_FINE: [MessageHandler(filters.Filters.regex("Sì"), orario_fine),
                 MessageHandler(filters.Filters.regex("No"), skip_orario_fine)],
             ORARIO_FINE_2: [MessageHandler(filters.Filters.text, orario_fine_2)],
-            LOCATION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), venue)],
-            TITOLO: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), titolo)],
             CATEGORIA: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), categoria)],
             DESCRIZIONE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), descrizione)],
             CONFERMA: [MessageHandler(filters.Filters.regex("Sì"), conferma),

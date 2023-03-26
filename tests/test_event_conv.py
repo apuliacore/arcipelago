@@ -2,37 +2,37 @@ import datetime
 from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext
 from event import Event
-from conversations.create_event import (evento, locandina, titolo, venue,
+from conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
 	data_inizio, orario_inizio, route_same_event, data_fine, data_fine_2)
-from conversations.create_event import (LOCANDINA, TITOLO, LOCATION, 
+from conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_START_DATE, 
 	DATA_INIZIO, ORARIO_INIZIO, ROUTE_SAME_EVENT, DATA_FINE, DATA_FINE_2,
 	ORARIO_FINE_2)
 
 
-def test_evento():
+def test_ask_poster():
 	# evento gets executed when the command /evento
 	# is sent to the bot. There's no special edge-case to test 
 	update = MockUpdate(MockMessage())
 	context = MockContext()
-	assert evento(update, context) == LOCANDINA
+	assert ask_poster(update, context) == ASK_NAME
 
 
-def test_locandina():
+def test_ask_event_name():
 	update = MockUpdate(MockMessage())
 	context = MockContext()
-	assert locandina(update, context) == TITOLO
+	assert ask_event_name(update, context) == ASK_VENUE
 
 
-def test_titolo():
+def test_ask_event_venue():
 	update = MockUpdate(MockMessage('nome evento'))
 	context = MockContext()
-	assert titolo(update, context) == LOCATION
+	assert ask_event_venue(update, context) == ASK_START_DATE
 
 
-def test_venue():
+def test_ask_start_date():
 	update = MockUpdate(MockMessage('nome venue'))
 	context = MockContext()
-	assert venue(update, context) == DATA_INIZIO
+	assert ask_start_date(update, context) == DATA_INIZIO
 
 
 def test_data_inizio():
