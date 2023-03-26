@@ -3,9 +3,10 @@ from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext
 from event import Event
 from conversations.create_event import (evento, locandina, titolo, venue,
-	data_inizio, orario_inizio, route_same_event)
+	data_inizio, orario_inizio, route_same_event, data_fine, data_fine_2)
 from conversations.create_event import (LOCANDINA, TITOLO, LOCATION, 
-	DATA_INIZIO, ORARIO_INIZIO, ROUTE_SAME_EVENT, DATA_FINE)
+	DATA_INIZIO, ORARIO_INIZIO, ROUTE_SAME_EVENT, DATA_FINE, DATA_FINE_2,
+	ORARIO_FINE_2)
 
 
 def test_evento():
@@ -79,3 +80,27 @@ def test_route_same_event():
 
 	update = MockUpdate(MockMessage('No'))
 	assert route_same_event(update, context) == DATA_FINE
+
+
+def test_data_fine():
+	update = MockUpdate(MockMessage(''))
+	context = MockContext()
+	data_fine(update, context) == DATA_FINE_2
+
+
+def test_data_fine_2():
+	# wrong format
+	update = MockUpdate(MockMessage('31/12/2022'))
+	context = MockContext()
+	assert data_fine_2(update, context) == DATA_FINE_2
+
+	# wrong type
+	update = MockUpdate(MockMessage('ciao'))
+	assert data_fine_2(update, context) == DATA_FINE_2
+
+	# wrong values
+	update = MockUpdate(MockMessage('30.2.100'))
+	assert data_fine_2(update, context) == DATA_FINE_2
+	
+	update = MockUpdate(MockMessage('30.3.2023'))
+	assert data_fine_2(update, context) == ORARIO_FINE_2
