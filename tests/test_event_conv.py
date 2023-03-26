@@ -1,8 +1,9 @@
 import datetime
+from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext
 from event import Event
 from conversations.create_event import (evento, locandina, titolo, venue,
-	data_inizio, orario_inizio)
+	data_inizio, orario_inizio, route_same_event)
 from conversations.create_event import (LOCANDINA, TITOLO, LOCATION, 
 	DATA_INIZIO, ORARIO_INIZIO, ROUTE_SAME_EVENT, DATA_FINE)
 
@@ -69,3 +70,12 @@ def test_orario_inizio():
 	update = MockUpdate(MockMessage(start_time))
 	context = MockContext()
 	assert orario_inizio(update, context) == DATA_FINE
+
+
+def test_route_same_event():
+	update = MockUpdate(MockMessage('Sì'))
+	context = MockContext()
+	assert route_same_event(update, context) == ConversationHandler.END
+
+	update = MockUpdate(MockMessage('No'))
+	assert route_same_event(update, context) == DATA_FINE
