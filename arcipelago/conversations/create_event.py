@@ -1,3 +1,6 @@
+"""Main conversation used to create a new event."""
+
+
 import traceback
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
@@ -54,7 +57,7 @@ def ask_start_date(update, context) -> int:
     
 
 def data_inizio(update, context) -> int:
-    """Stores date and asks if ending date."""
+    """Stores start date and asks start time."""
     try:
         context.user_data['event'].start_date = update.message.text
         update.message.reply_text(text.ask_start_time)
@@ -65,7 +68,8 @@ def data_inizio(update, context) -> int:
 
 
 def orario_inizio(update, context) -> int:
-    """Stores Asks if end time"""
+    """Stores start time, checks if there is already a similar event,
+    if not asks if user wants to add end date."""
     try:
         context.user_data['event'].start_time = update.message.text
         colliding_event = check_events_collision(context.user_data['event'])
@@ -100,7 +104,7 @@ def data_fine(update, context) -> int:
 
 
 def data_fine_2(update, context) -> int:
-    """Stores ending date, asks for time"""
+    """Stores ending date and asks ending time."""
     try:
         context.user_data['event'].end_date = update.message.text
         update.message.reply_text(text.ask_end_time)
@@ -111,18 +115,20 @@ def data_fine_2(update, context) -> int:
 
 
 def skip_data_fine(update, context) -> int:
+    """If the user chooses not to add an end date,
+    the bot asks if he wants to add an end time."""
     update.message.reply_text(text.ask_add_end_time, reply_markup=K.yes_or_no)
     return ORARIO_FINE
 
 
 def orario_fine(update, content) -> int:
-    """Asks end time"""
+    """If the user wants to add end time, the bot asks the end time."""
     update.message.reply_text(text.ask_end_time)
     return ORARIO_FINE_2
     
 
 def orario_fine_2(update, context) -> int:
-    """stores end time and asks location"""
+    """Stores end time and asks event category."""
     try:
         context.user_data['event'].end_time = update.message.text
         update.message.reply_text(text.ask_category, reply_markup=K.category)
@@ -133,13 +139,14 @@ def orario_fine_2(update, context) -> int:
 
 
 def skip_orario_fine(update, context) -> int:
-    """Skips end time asks for location"""
+    """If the users chooses not to add end time, 
+    the bot asks event category."""
     update.message.reply_text(text.ask_category, reply_markup=K.category)
     return CATEGORIA
 
 
 def categoria(update, context) -> int:
-    """Choose one or more category for the event."""
+    """Store event category and ask event description."""
     category = update.message.text[2:]
     if category not in category2emoji:
         update.message.reply_text(text.help_category, reply_markup=K.category)
@@ -150,6 +157,8 @@ def categoria(update, context) -> int:
 
 
 def descrizione(update, context) -> int:
+    """Stores event description and asks the user to confirm
+    the submission of the event."""
     try:
         context.user_data['event'].description = update.message.text
     except BadEventAttrError as e:
@@ -172,7 +181,9 @@ def descrizione(update, context) -> int:
 
 
 def conferma(update, context) -> int:
-    """sends the event to notification_channel"""
+    """If the user is authorized, the event is stored in the DB.
+    Otherwise, the event is sent to the admin notification channel
+    where admins can approve it."""
     username = update.message.from_user.username
     primonome = update.message.from_user.first_name
     user_id = update.message.from_user.id
