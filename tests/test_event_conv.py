@@ -3,9 +3,9 @@ from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext
 from event import Event
 from conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
-	data_inizio, orario_inizio, route_same_event, data_fine, data_fine_2)
+	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time)
 from conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_START_DATE, 
-	DATA_INIZIO, ORARIO_INIZIO, ROUTE_SAME_EVENT, DATA_FINE, DATA_FINE_2,
+	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME,
 	ORARIO_FINE_2)
 
 
@@ -32,37 +32,37 @@ def test_ask_event_venue():
 def test_ask_start_date():
 	update = MockUpdate(MockMessage('nome venue'))
 	context = MockContext()
-	assert ask_start_date(update, context) == DATA_INIZIO
+	assert ask_start_date(update, context) == ASK_START_TIME
 
 
-def test_data_inizio():
+def test_ask_start_time():
 	# wrong format
 	update = MockUpdate(MockMessage('1/1/2023'))
 	context = MockContext()
-	assert data_inizio(update, context) == DATA_INIZIO
+	assert ask_start_time(update, context) == ASK_START_TIME
 
 	# past date
 	past_date = (datetime.datetime.now().date() - datetime.timedelta(days=1)).strftime('%d.%m.%Y')
 	update = MockUpdate(MockMessage(past_date))
 	context = MockContext()
-	assert data_inizio(update, context) == DATA_INIZIO
+	assert ask_start_time(update, context) == ASK_START_TIME
 
 	start_date = datetime.datetime.now().date().strftime('%d.%m.%Y')
 	update = MockUpdate(MockMessage(start_date))
 	context = MockContext()
-	assert data_inizio(update, context) == ORARIO_INIZIO
+	assert ask_start_time(update, context) == ASK_ADD_END_DATE
 
 
-def test_orario_inizio():
+def test_ask_add_end_date():
 	# wrong format
 	update = MockUpdate(MockMessage('13.12'))
 	context = MockContext()
-	assert orario_inizio(update, context) == ORARIO_INIZIO
+	assert ask_add_end_date(update, context) == ASK_ADD_END_DATE
 
 	# wrong values
 	update = MockUpdate(MockMessage('25:66'))
 	context = MockContext()
-	assert orario_inizio(update, context) == ORARIO_INIZIO
+	assert ask_add_end_date(update, context) == ASK_ADD_END_DATE
 
 	# colliding event
 	# TODO: add test
@@ -70,7 +70,7 @@ def test_orario_inizio():
 	start_time = (datetime.datetime.now() + datetime.timedelta(hours=1)).time().strftime('%H:%M')
 	update = MockUpdate(MockMessage(start_time))
 	context = MockContext()
-	assert orario_inizio(update, context) == DATA_FINE
+	assert ask_add_end_date(update, context) == ASK_END_DATE
 
 
 def test_route_same_event():
@@ -79,28 +79,28 @@ def test_route_same_event():
 	assert route_same_event(update, context) == ConversationHandler.END
 
 	update = MockUpdate(MockMessage('No'))
-	assert route_same_event(update, context) == DATA_FINE
+	assert route_same_event(update, context) == ASK_END_DATE
 
 
-def test_data_fine():
+def test_ask_end_date():
 	update = MockUpdate(MockMessage(''))
 	context = MockContext()
-	data_fine(update, context) == DATA_FINE_2
+	ask_end_date(update, context) == ASK_END_TIME
 
 
-def test_data_fine_2():
+def test_ask_end_time():
 	# wrong format
 	update = MockUpdate(MockMessage('31/12/2022'))
 	context = MockContext()
-	assert data_fine_2(update, context) == DATA_FINE_2
+	assert ask_end_time(update, context) == ASK_END_TIME
 
 	# wrong type
 	update = MockUpdate(MockMessage('ciao'))
-	assert data_fine_2(update, context) == DATA_FINE_2
+	assert ask_end_time(update, context) == ASK_END_TIME
 
 	# wrong values
 	update = MockUpdate(MockMessage('30.2.100'))
-	assert data_fine_2(update, context) == DATA_FINE_2
+	assert ask_end_time(update, context) == ASK_END_TIME
 	
 	update = MockUpdate(MockMessage('30.3.2023'))
-	assert data_fine_2(update, context) == ORARIO_FINE_2
+	assert ask_end_time(update, context) == ORARIO_FINE_2

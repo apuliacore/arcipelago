@@ -13,8 +13,8 @@ from conversations import text
 from conversations import keyboards as K
 
 
-(ASK_NAME, ASK_VENUE, ASK_START_DATE, DATA_INIZIO, DATA_FINE, DATA_FINE_2, 
- ORARIO_INIZIO, ORARIO_FINE, ORARIO_FINE_2, 
+(ASK_NAME, ASK_VENUE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE, ASK_END_TIME, 
+ ASK_ADD_END_DATE, ORARIO_FINE, ORARIO_FINE_2, 
  CATEGORIA, DESCRIZIONE, CONFERMA, ROUTE_SAME_EVENT) = range(13)
 TOKEN = chatbot_token
 
@@ -50,24 +50,24 @@ def ask_start_date(update, context) -> int:
     try:
         context.user_data['event'].venue = update.message.text
         update.message.reply_text(text.ask_start_date)
-        return DATA_INIZIO
+        return ASK_START_TIME
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ASK_START_DATE
     
 
-def data_inizio(update, context) -> int:
+def ask_start_time(update, context) -> int:
     """Stores start date and asks start time."""
     try:
         context.user_data['event'].start_date = update.message.text
         update.message.reply_text(text.ask_start_time)
-        return ORARIO_INIZIO
+        return ASK_ADD_END_DATE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return DATA_INIZIO
+        return ASK_START_TIME
 
 
-def orario_inizio(update, context) -> int:
+def ask_add_end_date(update, context) -> int:
     """Stores start time, checks if there is already a similar event,
     if not asks if user wants to add end date."""
     try:
@@ -80,10 +80,10 @@ def orario_inizio(update, context) -> int:
             return ROUTE_SAME_EVENT
         else:
             update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
-            return DATA_FINE
+            return ASK_END_DATE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return ORARIO_INIZIO
+        return ASK_ADD_END_DATE
 
 
 def route_same_event(update, context) -> int:
@@ -94,16 +94,16 @@ def route_same_event(update, context) -> int:
         return ConversationHandler.END
     elif user_input == 'no':
         update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
-        return DATA_FINE
+        return ASK_END_DATE
 
 
-def data_fine(update, context) -> int:
+def ask_end_date(update, context) -> int:
     """Asks for ending date."""
     update.message.reply_text(text.ask_end_date)
-    return DATA_FINE_2
+    return ASK_END_TIME
 
 
-def data_fine_2(update, context) -> int:
+def ask_end_time(update, context) -> int:
     """Stores ending date and asks ending time."""
     try:
         context.user_data['event'].end_date = update.message.text
@@ -111,7 +111,7 @@ def data_fine_2(update, context) -> int:
         return ORARIO_FINE_2
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return DATA_FINE_2
+        return ASK_END_TIME
 
 
 def skip_data_fine(update, context) -> int:
@@ -236,19 +236,19 @@ event_conv_handler = ConversationHandler(
             ASK_NAME: [MessageHandler(filters.Filters.photo, ask_event_name)],
             ASK_VENUE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_event_venue)],
             ASK_START_DATE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_start_date)],
-            DATA_INIZIO: [MessageHandler(filters.Filters.text, data_inizio)],
-            DATA_FINE: [MessageHandler(filters.Filters.regex("Sì"), data_fine),
-                MessageHandler(filters.Filters.regex("No"), skip_data_fine)],
-            DATA_FINE_2: [MessageHandler(filters.Filters.text, data_fine_2)],
-            ORARIO_INIZIO: [MessageHandler(filters.Filters.text, orario_inizio)],
+            ASK_START_TIME: [MessageHandler(filters.Filters.text, ask_start_time)],
             ROUTE_SAME_EVENT: [MessageHandler(filters.Filters.text, route_same_event)],
+            ASK_ADD_END_DATE: [MessageHandler(filters.Filters.text, ask_add_end_date)],
+            ASK_END_DATE: [MessageHandler(filters.Filters.regex("Sì"), ask_end_date),
+                        MessageHandler(filters.Filters.regex("No"), skip_data_fine)],
+            ASK_END_TIME: [MessageHandler(filters.Filters.text, ask_end_time)],
             ORARIO_FINE: [MessageHandler(filters.Filters.regex("Sì"), orario_fine),
-                MessageHandler(filters.Filters.regex("No"), skip_orario_fine)],
+                          MessageHandler(filters.Filters.regex("No"), skip_orario_fine)],
             ORARIO_FINE_2: [MessageHandler(filters.Filters.text, orario_fine_2)],
             CATEGORIA: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), categoria)],
             DESCRIZIONE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), descrizione)],
             CONFERMA: [MessageHandler(filters.Filters.regex("Sì"), conferma),
-                MessageHandler(filters.Filters.regex("No"), cancel)],
+                       MessageHandler(filters.Filters.regex("No"), cancel)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
