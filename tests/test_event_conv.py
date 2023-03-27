@@ -3,10 +3,11 @@ from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext
 from event import Event
 from conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
-	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date)
+	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date,
+	ask_description, ask_confirm_submission)
 from conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_START_DATE, 
 	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
-	ASK_CATEGORY_PATH_END_TIME)
+	ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT)
 
 
 def test_ask_poster():
@@ -104,3 +105,28 @@ def test_ask_end_time_path_end_date():
 	
 	update = MockUpdate(MockMessage('30.3.2023'))
 	assert ask_end_time_path_end_date(update, context) == ASK_CATEGORY_PATH_END_TIME
+
+
+def test_ask_description():
+	# non-existent category
+	update = MockUpdate(MockMessage('concerti'))
+	context = MockContext()
+	
+	assert ask_description(update, context) == ASK_DESCRIPTION
+
+	update = MockUpdate(MockMessage('🎹 musica'))
+	
+	assert ask_description(update, context) == ASK_CONFIRM_SUBMISSION
+
+
+def test_ask_confirm_submission():
+	# too long description
+	update = MockUpdate(MockMessage('prova'*300))
+	context = MockContext()
+
+	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
+
+	update = MockUpdate(MockMessage('prova'))
+	context = MockContext()
+
+	assert ask_confirm_submission(update, context) == PROCESS_EVENT

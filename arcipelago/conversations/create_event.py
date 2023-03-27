@@ -135,7 +135,7 @@ def ask_category_path_end_time(update, context) -> int:
         return ASK_DESCRIPTION
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return ORARIO_FINE_2
+        return ASK_CATEGORY_PATH_END_TIME
 
 
 def ask_category_path_no_end_time(update, context) -> int:
