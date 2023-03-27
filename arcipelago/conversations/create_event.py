@@ -13,9 +13,9 @@ from conversations import text
 from conversations import keyboards as K
 
 
-(ASK_NAME, ASK_VENUE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE, ASK_END_TIME, 
- ASK_ADD_END_DATE, ORARIO_FINE, ORARIO_FINE_2, 
- CATEGORIA, DESCRIZIONE, CONFERMA, ROUTE_SAME_EVENT) = range(13)
+(ASK_NAME, ASK_VENUE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE, 
+ ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE, ASK_CATEGORY_PATH_END_TIME, 
+ ASK_DESCRIPTION, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT, ROUTE_SAME_EVENT) = range(13)
 TOKEN = chatbot_token
 
 
@@ -100,70 +100,70 @@ def route_same_event(update, context) -> int:
 def ask_end_date(update, context) -> int:
     """Asks for ending date."""
     update.message.reply_text(text.ask_end_date)
-    return ASK_END_TIME
+    return ASK_END_TIME_PATH_END_DATE
 
 
-def ask_end_time(update, context) -> int:
+def ask_end_time_path_end_date(update, context) -> int:
     """Stores ending date and asks ending time."""
     try:
         context.user_data['event'].end_date = update.message.text
         update.message.reply_text(text.ask_end_time)
-        return ORARIO_FINE_2
+        return ASK_CATEGORY_PATH_END_TIME
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return ASK_END_TIME
+        return ASK_END_TIME_PATH_END_DATE
 
 
-def skip_data_fine(update, context) -> int:
+def ask_add_end_time(update, context) -> int:
     """If the user chooses not to add an end date,
     the bot asks if he wants to add an end time."""
     update.message.reply_text(text.ask_add_end_time, reply_markup=K.yes_or_no)
-    return ORARIO_FINE
+    return ASK_END_TIME_PATH_NO_END_DATE
 
 
-def orario_fine(update, content) -> int:
+def ask_end_time_path_no_end_date(update, content) -> int:
     """If the user wants to add end time, the bot asks the end time."""
     update.message.reply_text(text.ask_end_time)
-    return ORARIO_FINE_2
+    return ASK_CATEGORY_PATH_END_TIME
     
 
-def orario_fine_2(update, context) -> int:
+def ask_category_path_end_time(update, context) -> int:
     """Stores end time and asks event category."""
     try:
         context.user_data['event'].end_time = update.message.text
         update.message.reply_text(text.ask_category, reply_markup=K.category)
-        return CATEGORIA
+        return ASK_DESCRIPTION
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ORARIO_FINE_2
 
 
-def skip_orario_fine(update, context) -> int:
+def ask_category_path_no_end_time(update, context) -> int:
     """If the users chooses not to add end time, 
     the bot asks event category."""
     update.message.reply_text(text.ask_category, reply_markup=K.category)
-    return CATEGORIA
+    return ASK_DESCRIPTION
 
 
-def categoria(update, context) -> int:
+def ask_description(update, context) -> int:
     """Store event category and ask event description."""
     category = update.message.text[2:]
     if category not in category2emoji:
         update.message.reply_text(text.help_category, reply_markup=K.category)
-        return CATEGORIA
+        return ASK_DESCRIPTION
     context.user_data['event'].categories = category
     update.message.reply_text(text.ask_description)
-    return DESCRIZIONE
+    return ASK_CONFIRM_SUBMISSION
 
 
-def descrizione(update, context) -> int:
+def ask_confirm_submission(update, context) -> int:
     """Stores event description and asks the user to confirm
     the submission of the event."""
     try:
         context.user_data['event'].description = update.message.text
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return DESCRIZIONE
+        return ASK_CONFIRM_SUBMISSION
     try:
         username = update.message.from_user.username
         primonome = update.message.from_user.first_name
@@ -172,7 +172,7 @@ def descrizione(update, context) -> int:
             caption=context.user_data['event'].html(),
             parse_mode=telegram.ParseMode.HTML)
         update.message.reply_text(text.ask_confirm_send_event, reply_markup=K.yes_or_no)
-        return CONFERMA
+        return PROCESS_EVENT
     except telegram.error.BadRequest:
         update.message.reply_text(text.send_event_failure)
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel,text=f"{primonome}, @{username} ha provato ad inviare un evento ma si è verificato un errore")
@@ -180,7 +180,7 @@ def descrizione(update, context) -> int:
         return ConversationHandler.END
 
 
-def conferma(update, context) -> int:
+def process_submitted_event(update, context) -> int:
     """If the user is authorized, the event is stored in the DB.
     Otherwise, the event is sent to the admin notification channel
     where admins can approve it."""
@@ -240,14 +240,14 @@ event_conv_handler = ConversationHandler(
             ROUTE_SAME_EVENT: [MessageHandler(filters.Filters.text, route_same_event)],
             ASK_ADD_END_DATE: [MessageHandler(filters.Filters.text, ask_add_end_date)],
             ASK_END_DATE: [MessageHandler(filters.Filters.regex("Sì"), ask_end_date),
-                        MessageHandler(filters.Filters.regex("No"), skip_data_fine)],
-            ASK_END_TIME: [MessageHandler(filters.Filters.text, ask_end_time)],
-            ORARIO_FINE: [MessageHandler(filters.Filters.regex("Sì"), orario_fine),
-                          MessageHandler(filters.Filters.regex("No"), skip_orario_fine)],
-            ORARIO_FINE_2: [MessageHandler(filters.Filters.text, orario_fine_2)],
-            CATEGORIA: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), categoria)],
-            DESCRIZIONE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), descrizione)],
-            CONFERMA: [MessageHandler(filters.Filters.regex("Sì"), conferma),
+                        MessageHandler(filters.Filters.regex("No"), ask_add_end_time)],
+            ASK_END_TIME_PATH_END_DATE: [MessageHandler(filters.Filters.text, ask_end_time_path_end_date)],
+            ASK_END_TIME_PATH_NO_END_DATE: [MessageHandler(filters.Filters.regex("Sì"), ask_end_time_path_no_end_date),
+                          MessageHandler(filters.Filters.regex("No"), ask_category_path_no_end_time)],
+            ASK_CATEGORY_PATH_END_TIME: [MessageHandler(filters.Filters.text, ask_category_path_end_time)],
+            ASK_DESCRIPTION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_description)],
+            ASK_CONFIRM_SUBMISSION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_confirm_submission)],
+            PROCESS_EVENT: [MessageHandler(filters.Filters.regex("Sì"), process_submitted_event),
                        MessageHandler(filters.Filters.regex("No"), cancel)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],

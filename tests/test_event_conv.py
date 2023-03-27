@@ -3,10 +3,10 @@ from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext
 from event import Event
 from conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
-	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time)
+	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date)
 from conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_START_DATE, 
-	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME,
-	ORARIO_FINE_2)
+	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
+	ASK_CATEGORY_PATH_END_TIME)
 
 
 def test_ask_poster():
@@ -85,22 +85,22 @@ def test_route_same_event():
 def test_ask_end_date():
 	update = MockUpdate(MockMessage(''))
 	context = MockContext()
-	ask_end_date(update, context) == ASK_END_TIME
+	ask_end_date(update, context) == ASK_END_TIME_PATH_END_DATE
 
 
-def test_ask_end_time():
+def test_ask_end_time_path_end_date():
 	# wrong format
 	update = MockUpdate(MockMessage('31/12/2022'))
 	context = MockContext()
-	assert ask_end_time(update, context) == ASK_END_TIME
+	assert ask_end_time_path_end_date(update, context) == ASK_END_TIME_PATH_END_DATE
 
 	# wrong type
 	update = MockUpdate(MockMessage('ciao'))
-	assert ask_end_time(update, context) == ASK_END_TIME
+	assert ask_end_time_path_end_date(update, context) == ASK_END_TIME_PATH_END_DATE
 
 	# wrong values
 	update = MockUpdate(MockMessage('30.2.100'))
-	assert ask_end_time(update, context) == ASK_END_TIME
+	assert ask_end_time_path_end_date(update, context) == ASK_END_TIME_PATH_END_DATE
 	
 	update = MockUpdate(MockMessage('30.3.2023'))
-	assert ask_end_time(update, context) == ORARIO_FINE_2
+	assert ask_end_time_path_end_date(update, context) == ASK_CATEGORY_PATH_END_TIME
