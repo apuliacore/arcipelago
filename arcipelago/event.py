@@ -5,7 +5,7 @@ import html
 import re
 import difflib
 from dataclasses import dataclass
-from db import get_event_from_id, get_id_name_venue_start_dt_future_events
+from arcipelago.db import get_event_from_id, get_id_name_venue_start_dt_future_events
 
 
 event_categories = ["musica", "cinema", "arte", "attivismo", "teatro e stand-up", "libri e lettura", "scienza e tecnologia", "fotografia", "danza", "fumetti e giochi", "altro"]

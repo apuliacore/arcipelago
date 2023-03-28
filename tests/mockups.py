@@ -9,8 +9,9 @@ class MockPhoto:
 
 @dataclass
 class MockUser:
-	username: str = 'marco123'
-	first_name: str = 'Marco'
+	username: str = 'pippo123'
+	first_name: str = 'Pippo'
+	id: int = 0
 
 
 class MockMessage:
@@ -19,7 +20,7 @@ class MockMessage:
 		self.photo = [MockPhoto()]
 		self.from_user = MockUser()
 
-	def reply_text(self, text, reply_markup=None):
+	def reply_text(self, text, reply_markup=None, parse_mode=None):
 		print(text)
 
 	def reply_photo(self, photo, caption, parse_mode=None):

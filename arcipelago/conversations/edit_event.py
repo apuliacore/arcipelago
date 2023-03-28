@@ -32,7 +32,7 @@ def edit(update, context) -> int:
 
 def edit_field(update, context) -> int:
     """Modify specific information for an event."""
-    if update.message.text not in editable_fields:
+    if update.message.text not in K.editable_fields:
         update.message.reply_text(text.help_edit_field, reply_markup=K.editable)
         return EDIT2
     else:

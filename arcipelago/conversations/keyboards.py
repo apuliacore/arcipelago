@@ -2,6 +2,9 @@ from telegram import ReplyKeyboardMarkup
 from event import category2emoji
 
 
+editable_fields = ["Nome", "Luogo", "Data inizio", "Data fine", "Ora inizio", "Ora fine", "Descrizione"]
+
+
 yes_or_no = ReplyKeyboardMarkup(
 	[["Sì", "No"]], 
 	one_time_keyboard=True, 
@@ -15,7 +18,7 @@ category = ReplyKeyboardMarkup(
 	)
 
 editable = ReplyKeyboardMarkup(
-	[[field] for field in ["Nome", "Luogo", "Data inizio", "Data fine", "Ora inizio", "Ora fine", "Descrizione"]],
+	[[field] for field in editable_fields],
 	one_time_keyboard=True,
 	input_field_placeholder="Scegli cosa modificare"
 	)
