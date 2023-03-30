@@ -125,3 +125,9 @@ def execute_select_query(query, values):
 	res = cursor.execute(query, values).fetchall()
 	db_connection.close()
 	return res
+
+def get_db_version():
+	db_connection = get_connection()
+	cursor = db_connection.cursor()
+	res = cursor.execute('PRAGMA user_version').fetchall()
+	return res[0][0]

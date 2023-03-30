@@ -1,15 +1,3 @@
-DROP TABLE IF EXISTS event;
-DROP TABLE IF EXISTS event_old;
-DROP TABLE IF EXISTS venue;
-
-CREATE TABLE venue (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	name TEXT NOT NULL,
-	address TEXT NOT NULL,
-	x_coordinate REAL,
-	y_coordinate REAL
-);
-
 CREATE TABLE event (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL,
@@ -22,7 +10,10 @@ CREATE TABLE event (
 	published BOOL NOT NULL DEFAULT False,
 	price REAL,
 	categories TEXT,
+	from_chat INTEGER,
+	telegram_link TEXT,
+	publication_date DATE,
 	FOREIGN KEY (verified_venue_id) REFERENCES venue (id)
 );
 
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;
