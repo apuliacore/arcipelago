@@ -1,6 +1,6 @@
 import datetime
 import telegram
-from arcipelago.config import main_channel, STAGING 
+from arcipelago.config import main_channel 
 from arcipelago.db import get_events_next_n_days_not_published, set_published, get_events_in_date
 from arcipelago.event import Event
 from arcipelago.extra.gcalendar import add_event_to_gcalendar
