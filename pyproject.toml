@@ -23,6 +23,11 @@ google-api-python-client = "^2.78.0"
 [tool.pytest.ini_options]
 pythonpath = "arcipelago"
 
+[tool.poetry.scripts]
+"arcipelago:run" = 'arcipelago.main:main'
+"arcipelago:init-db" = 'arcipelago.init_db:main'
+"arcipelago:migrate-db" = 'arcipelago.migrate:main'
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

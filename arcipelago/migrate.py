@@ -1,4 +1,4 @@
-import db
+from arcipelago import db
 
 
 def main():

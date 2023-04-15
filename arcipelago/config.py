@@ -1,3 +1,6 @@
+# Installation
+development = True
+
 # Telegram
 chatbot_token = '0'
 main_channel = 0
