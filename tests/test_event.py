@@ -55,7 +55,9 @@ def test_start_time_setter():
 		assert 'type' in str(e)
 
 	# correct assignment
-	start_time = (datetime.datetime.now() + datetime.timedelta(hours=1)).time()
+	now_plus_1h = (datetime.datetime.now() + datetime.timedelta(hours=1))
+	start_time = now_plus_1h.time()
+	event.start_date = now_plus_1h.date()
 	event.start_time = start_time.strftime('%H:%M')
 	assert event.start_time.strftime('%H:%M') == start_time.strftime('%H:%M')
 
@@ -120,9 +122,11 @@ def test_end_time_setter():
 		assert 'precedente' in str(e)
 
 	# correct assignment
-	end_time = (datetime.datetime.now() + datetime.timedelta(hours=1)).time()
+	now_plus_1h = (datetime.datetime.now() + datetime.timedelta(hours=1))
+	end_time = now_plus_1h.time()
+	event.end_date = now_plus_1h.date()
 	event.end_time = end_time.strftime('%H:%M')
-	assert end_time.strftime('%H:%M') == event.end_time.strftime('%H:%M')
+	assert event.end_time.strftime('%H:%M') == end_time.strftime('%H:%M')
 
 
 def test_check_events_collision():

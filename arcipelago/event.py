@@ -244,10 +244,15 @@ class Event(object):
                     if not self.start_time < time_input:
                         raise BadEventAttrError("L'orario che hai inserito è precedente a quello di inzio evento! Inserisci un orario valido:")
                     self._end_time = time_input
+                else:
+                    time_input = datetime.time(hour=hh, minute=mm)
+                    self._end_time = time_input                    
         elif isinstance(value, datetime.time):
             if self.end_date is None or (self.end_date == self.start_date):
                 if not self.start_time < value:
                     raise BadEventAttrError("L'orario che hai inserito è precedente a quello di inzio evento! Inserisci un orario valido:")
+                self._end_time = value
+            else:
                 self._end_time = value
         else:
             raise BadEventAttrError(f"Start datetime should be of type {datetime.time} or {str}, not {type(value)}")

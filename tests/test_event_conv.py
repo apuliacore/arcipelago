@@ -1,6 +1,7 @@
 import datetime
 from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext
+from test_db import get_dummy_event
 from arcipelago.event import Event
 from arcipelago.conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date,
@@ -68,9 +69,12 @@ def test_ask_add_end_date():
 	# colliding event
 	# TODO: add test
 
-	start_time = (datetime.datetime.now() + datetime.timedelta(hours=1)).time().strftime('%H:%M')
+	now_plus_1h = (datetime.datetime.now() + datetime.timedelta(hours=1))
+	start_time = now_plus_1h.time().strftime('%H:%M')
 	update = MockUpdate(MockMessage(start_time))
-	context = MockContext()
+	dummy_event = Event()
+	dummy_event.start_date = now_plus_1h.date()
+	context = MockContext(dummy_event)
 	assert ask_add_end_date(update, context) == ASK_END_DATE
 
 
@@ -123,11 +127,11 @@ def test_ask_description():
 def test_ask_confirm_submission():
 	# too long description
 	update = MockUpdate(MockMessage('prova'*300))
-	context = MockContext()
+	context = MockContext(get_dummy_event())
 
 	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
 
 	update = MockUpdate(MockMessage('prova'))
-	context = MockContext()
+	context = MockContext(get_dummy_event())
 
 	assert ask_confirm_submission(update, context) == PROCESS_EVENT
