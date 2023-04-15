@@ -10,7 +10,16 @@ def init_db(dummy=False):
 
 	cursor = db_connection.cursor()
 
-	with open('schema.sql', 'rb') as f:
+	cursor.execute("DROP TABLE IF EXISTS event;")
+	db_connection.commit()
+	
+	cursor.execute("DROP TABLE IF EXISTS event_old;")
+	db_connection.commit()
+	
+	cursor.execute("DROP TABLE IF EXISTS venue;")
+	db_connection.commit()
+
+	with open('schema_v1.sql', 'rb') as f:
 		cursor.executescript(f.read().decode('utf8'))
 
 	if dummy:
