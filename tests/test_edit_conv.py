@@ -1,6 +1,6 @@
 from telegram.ext import ConversationHandler
-from conversations.edit_event import edit, edit_field, confirm_edit_field
-from conversations.edit_event import EDIT2, EDIT3
+from arcipelago.conversations.edit_event import edit, edit_field, confirm_edit_field
+from arcipelago.conversations.edit_event import EDIT2, EDIT3
 from mockups import MockUpdate, MockMessage, MockContext
 import arcipelago
 

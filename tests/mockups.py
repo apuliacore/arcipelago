@@ -1,4 +1,4 @@
-from event import Event
+from arcipelago.event import Event
 from dataclasses import dataclass
 
 

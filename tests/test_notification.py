@@ -1,7 +1,7 @@
 import datetime
 import random
-from notification import get_next_hour_datetime, check_event_will_get_published
-from event import Event
+from arcipelago.notification import get_next_hour_datetime, check_event_will_get_published
+from arcipelago.event import Event
 
 
 def test_get_next_hour_datetime():
@@ -25,7 +25,7 @@ def test_get_next_hour_datetime():
 		assert dt8pm.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(now.year, now.month, now.day, _8pm, 0).strftime('%d.%m.%Y-%H:%M')
 	else:
 		assert dt8am.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(next_day.year, next_day.month, next_day.day, _8am, 0).strftime('%d.%m.%Y-%H:%M')
-		assert dt8pm.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(next_day.year, next_day.month, next_day.day, _pam, 0).strftime('%d.%m.%Y-%H:%M')
+		assert dt8pm.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(next_day.year, next_day.month, next_day.day, _8pm, 0).strftime('%d.%m.%Y-%H:%M')
 
 
 def test_check_event_will_get_published():

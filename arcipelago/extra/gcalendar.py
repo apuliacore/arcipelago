@@ -2,7 +2,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
 import datetime
-from config import SERVICE_ACCOUNT_FILE, CALENDAR_ID
+from arcipelago.config import SERVICE_ACCOUNT_FILE, CALENDAR_ID
 
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]

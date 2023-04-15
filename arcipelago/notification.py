@@ -1,9 +1,9 @@
 import datetime
 import telegram
-from config import main_channel, STAGING 
-from db import get_events_next_n_days_not_published, set_published, get_events_in_date
-from event import Event
-from extra.gcalendar import add_event_to_gcalendar
+from arcipelago.config import main_channel, STAGING 
+from arcipelago.db import get_events_next_n_days_not_published, set_published, get_events_in_date
+from arcipelago.event import Event
+from arcipelago.extra.gcalendar import add_event_to_gcalendar
 
 
 def get_next_hour_datetime(hour: int):

@@ -1,5 +1,5 @@
 from telegram import ReplyKeyboardMarkup
-from event import category2emoji
+from arcipelago.event import category2emoji
 
 
 editable_fields = ["Nome", "Luogo", "Data inizio", "Data fine", "Ora inizio", "Ora fine", "Descrizione"]

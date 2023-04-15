@@ -5,12 +5,12 @@ import traceback
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, filters
-from config import notification_channel, authorized_users, chatbot_token
-from db import insert_event, set_confirmed, get_event_from_id
-from event import category2emoji, Event, check_events_collision, BadEventAttrError
-from notification import check_event_will_get_published, publish_event
-from conversations import text
-from conversations import keyboards as K
+from arcipelago.config import notification_channel, authorized_users, chatbot_token
+from arcipelago.db import insert_event, set_confirmed, get_event_from_id
+from arcipelago.event import category2emoji, Event, check_events_collision, BadEventAttrError
+from arcipelago.notification import check_event_will_get_published, publish_event
+from arcipelago.conversations import text
+from arcipelago.conversations import keyboards as K
 
 
 (ASK_NAME, ASK_VENUE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE, 

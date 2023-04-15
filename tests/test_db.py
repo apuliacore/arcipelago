@@ -24,7 +24,7 @@ def test_insert_event():
 	db_conn.close()
 	assert res[1:] == ('Martedì Popolare', 'Storie del Vecchio Sud, via Buccari, Bari', None, 
 		datetime.datetime(2022, 9, 10, 21, 0), datetime.datetime(2022, 9, 10, 23, 0), 
-		'Un gruppo di amici che si riunisce ogni due martedì per tenere viva la tradizione musicale popolare della nostra terra.', False, False, 0, 'musica, arte')
+		'Un gruppo di amici che si riunisce ogni due martedì per tenere viva la tradizione musicale popolare della nostra terra.', False, False, 0, 'musica, arte', None, None, None)
 	delete_event(event_id)
 
 

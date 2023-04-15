@@ -1,9 +1,9 @@
 import telegram
 from telegram.ext import ConversationHandler, filters, CommandHandler, MessageHandler
-from db import edit_event, get_event_from_hash
-from event import Event
-from conversations import text
-from conversations import keyboards as K
+from arcipelago.db import edit_event, get_event_from_hash
+from arcipelago.event import Event
+from arcipelago.conversations import text
+from arcipelago.conversations import keyboards as K
 
 
 (EDIT2, EDIT3) = range(2)
