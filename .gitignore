@@ -1,5 +1,6 @@
 __pycache__/
-config.py
 .coverage
 dummy.sql
 *.db
+*.tar.gz
+*.whl
