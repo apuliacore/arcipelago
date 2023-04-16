@@ -1,8 +1,6 @@
 # main
 welcome = "Ciao! Sono il bot di @apuliacore, invia /evento per suggerire un nuovo evento o /oggi per conoscere gli eventi di oggi."
 no_event = "Sembra che non ci siano eventi registrati per oggi. Se vuoi puoi suggerirne uno con /evento."
-help_feedback = "Scrivi il tuo messaggio dopo il comando, ad esempio così: /feedback Ciao!"
-ack_feedback_received = "Ok! Il tuo messaggio è stato inviato agli admin. Grazie!"
 ack_canceled_op = "Ok, operazione annullata."
 
 # create event
@@ -37,3 +35,11 @@ edit_event_failure = "Non è stato trovato nessun evento con questo codice. L'ev
 help_edit_field = "Il campo che hai scelto non esiste. Scegline uno usando la tastiera qui sotto:"
 ask_new_value_field = "Ok, invia il nuovo valore: [se è un orario usa il formato hh:mm, se è una data gg.mm.aaaa]"
 ack_event_modified = "Evento modificato."
+
+
+# send feedback
+intro_feedback = "Ok, invia un messaggio con il tuo feedback:"
+ask_anon = "Ok, vuoi rimanere anonim*? (in questo caso, non potrai essere ricontattat*)"
+help_no_username = "Il tuo account Telegram non ha uno username associato, perciò non potremo ricontattarti. Ricorda che se vuoi puoi scriverci anche su Instagram (@apuliacore)."
+ack_feedback_sent_anon = "Il tuo messaggio è stato inviato anonimamente agli admin. Grazie!"
+ack_feedback_sent_ident = "Il tuo messaggio è stato inviato agli admin, ti ricontatteremo se necessario. Grazie!"

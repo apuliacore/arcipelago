@@ -15,10 +15,10 @@ class MockUser:
 
 
 class MockMessage:
-	def __init__(self, text='Hello world!'):
+	def __init__(self, text='Hello world!', user=MockUser()):
 		self.text = text
 		self.photo = [MockPhoto()]
-		self.from_user = MockUser()
+		self.from_user = user
 
 	def reply_text(self, text, reply_markup=None, parse_mode=None):
 		print(text)
