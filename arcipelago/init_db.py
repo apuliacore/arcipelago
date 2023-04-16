@@ -1,4 +1,3 @@
-import argparse
 from arcipelago.db import init_db
 from arcipelago.config import development
 
@@ -9,7 +8,4 @@ def main():
 
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--dummy', action='store_true')
-	args = parser.parse_args()
-	main(args)
+	main()

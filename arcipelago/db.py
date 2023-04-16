@@ -3,7 +3,7 @@ import datetime
 import hashlib
 
 
-def init_db(dummy=False):
+def init_db(development=False):
 	db_connection = sqlite3.connect(
 		"arcipelago.db",
 		detect_types=sqlite3.PARSE_DECLTYPES
@@ -20,10 +20,10 @@ def init_db(dummy=False):
 	cursor.execute("DROP TABLE IF EXISTS venue;")
 	db_connection.commit()
 
-	with open('schema_v2.sql', 'rb') as f:
+	with open('schema.sql', 'rb') as f:
 		cursor.executescript(f.read().decode('utf8'))
 
-	if dummy:
+	if development:
 		with open('dummy.sql', 'rb') as f:
 			cursor.executescript(f.read().decode('utf8'))
 
