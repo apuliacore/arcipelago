@@ -292,17 +292,18 @@ class Event(object):
 
         if short:
             res_html = f"🕒{start_time}"
-        else:
-            res_html = f"📅{start_datetime}"
-        if self.end_datetime is not None:
-            res_html +=  f" - {end_datetime}"
-        res_html += f"""\n📍{venue}"""
-        
-        if short:
-            res_html += f"""\n<code>{name}</code>"""
+            if self.end_datetime is not None:
+                res_html +=  f" - {end_datetime}"
+            res_html += f"""\n📍{venue}\n"""
+            res_html += f"""<code>{name}</code>"""
         
         else:
-            res_html += f"""\n\n<code>{name}</code>\n\n{description}"""
+            res_html = f"<code>{name}</code>\n"
+            res_html += f"📅{start_datetime}"
+            if self.end_datetime is not None:
+                res_html +=  f" - {end_datetime}"
+            res_html += f"""\n📍{venue}\n\n"""
+            res_html += f"""{description}"""        
 
         return res_html
 
