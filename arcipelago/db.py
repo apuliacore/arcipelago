@@ -20,7 +20,7 @@ def init_db(dummy=False):
 	cursor.execute("DROP TABLE IF EXISTS venue;")
 	db_connection.commit()
 
-	with open('schema_v1.sql', 'rb') as f:
+	with open('schema_v2.sql', 'rb') as f:
 		cursor.executescript(f.read().decode('utf8'))
 
 	if dummy:
