@@ -15,6 +15,7 @@ from arcipelago.event import Event
 from arcipelago.config import chatbot_token, notification_channel, daily_update_interval
 from arcipelago.conversations.create_event import event_conv_handler, callback_query_handler
 from arcipelago.conversations.edit_event import edit_conv_handler
+from arcipelago.conversations.send_feedback import feedback_conv_handler
 from arcipelago.conversations import text
 from arcipelago.notification import daily_publication_callback, get_next_hour_datetime, daily_events_callback
 
@@ -55,16 +56,6 @@ def giorno(update, context) -> int:
     return ConversationHandler.END
 
 
-def feedback(update, context) -> int:
-    """Sends feedback message to admins group."""
-    if update.message.text.strip() == "/feedback":
-        update.message.reply_text(text.help_feedback)
-    else:
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=update.message.text[10:])
-        update.message.reply_text(text.ack_feedback_received)
-    return ConversationHandler.END
-
-
 def cancel(update, context) -> int:
     """Cancels and ends the conversation."""
     update.message.reply_text(text.ack_canceled_op)
@@ -78,14 +69,13 @@ def main():
     start_handler = CommandHandler("start", start)
     todays_events_handler = CommandHandler("oggi", oggi)
     giorno_handler = CommandHandler("giorno", giorno)
-    feedback_handler = CommandHandler("feedback", feedback)
     disp.job_queue.run_repeating(daily_publication_callback, interval=daily_update_interval, first=get_next_hour_datetime(10))
     disp.job_queue.run_repeating(daily_events_callback, interval=60*60*24, first=get_next_hour_datetime(17))
     disp.add_handler(start_handler)
     disp.add_handler(event_conv_handler)
     disp.add_handler(edit_conv_handler)
     disp.add_handler(todays_events_handler)
-    disp.add_handler(feedback_handler)
+    disp.add_handler(feedback_conv_handler)
     disp.add_handler(callback_query_handler)
     disp.add_handler(giorno_handler)
     upd.start_polling()
