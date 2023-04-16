@@ -1,4 +1,6 @@
 from telegram.ext import ConversationHandler
+from arcipelago.db import get_event_from_id
+from arcipelago.event import Event
 from arcipelago.conversations.edit_event import edit, edit_field, confirm_edit_field
 from arcipelago.conversations.edit_event import EDIT2, EDIT3
 from mockups import MockUpdate, MockMessage, MockContext
@@ -12,11 +14,11 @@ def test_edit():
 	assert edit(update, context) == ConversationHandler.END
 
 	# event not found
-	update = MockUpdate(MockMessage(text='1234'))
-	assert edit(update, context) == ConversationHandler.END	
+	update = MockUpdate(MockMessage(text='/modifica 1234'))
+	assert edit(update, context) == ConversationHandler.END
 
-	update = MockUpdate(MockMessage(text='-4867727275918323885'))  # corso di ballo
-	# '6207925744759765552'  # phest
+	event = Event().load_from_res(get_event_from_id(1)[0])  # festa di fine estate
+	update = MockUpdate(MockMessage(text='/modifica ' + event.hash()))  
 	assert edit(update, context) == EDIT2
 
 

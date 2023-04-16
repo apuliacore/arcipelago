@@ -4,6 +4,7 @@ import datetime
 import html
 import re
 import difflib
+import hashlib
 from dataclasses import dataclass
 from arcipelago.db import get_event_from_id, get_id_name_venue_start_dt_future_events
 
@@ -306,7 +307,7 @@ class Event(object):
         return res_html
 
     def hash(self):
-        return str(hash("".join([self.name, self.venue])))
+        return str(hashlib.shake_128(self.name.encode()).hexdigest(5))
 
     def to_dict(self):
         return {

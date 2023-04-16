@@ -1,5 +1,6 @@
 import sqlite3
 import datetime
+import hashlib
 
 
 def init_db(dummy=False):
@@ -98,16 +99,17 @@ def get_events_in_date(event_datetime: datetime.datetime):
 
 def get_event_from_hash(event_hash: str):
 
-	def get_event_hash(name: str, venue: str):
-	    return str(hash("".join([name, venue])))
+	def get_event_hash(name: str):
+	    name_hash = hashlib.shake_128(name.encode()).hexdigest(5)
+	    return str(name_hash)
 
 	db_connection = sqlite3.connect(
 			"arcipelago.db",
 			detect_types=sqlite3.PARSE_DECLTYPES
 		)
-	db_connection.create_function("get_event_hash", 2, get_event_hash)
+	db_connection.create_function("get_event_hash", 1, get_event_hash)
 	cursor = db_connection.cursor()
-	res = cursor.execute("SELECT * FROM event WHERE get_event_hash(name, venue) = ? AND published = False", (event_hash,)).fetchall()
+	res = cursor.execute("SELECT * FROM event WHERE get_event_hash(name) = ? AND published = False", (event_hash,)).fetchall()
 	db_connection.close()
 	return res
 
