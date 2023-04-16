@@ -19,7 +19,7 @@ def ask_anon(update, context) -> int:
     context.user_data['feedback'] = update.message.text
 
     if update.message.from_user.username is not None:
-        update.message.reply_text(text.ask_anon, K.yes_or_no)
+        update.message.reply_text(text.ask_anon, reply_markup=K.yes_or_no)
         return SEND_FEEDBACK
     else:
         update.message.reply_text(text.help_no_username)
