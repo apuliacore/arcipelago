@@ -27,7 +27,7 @@ pythonpath = "arcipelago"
 "arcipelago:run" = 'arcipelago.main:main'
 "arcipelago:init-db" = 'arcipelago.init_db:main'
 "arcipelago:migrate-db" = 'arcipelago.migrate:main'
-"arcipelago:load-db" = 'arcipelago.db:import'
+"arcipelago:import-db" = 'arcipelago.db:import_db'
 
 [build-system]
 requires = ["poetry-core"]
