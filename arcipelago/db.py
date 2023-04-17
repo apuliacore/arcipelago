@@ -30,6 +30,29 @@ def init_db(development=False):
 	db_connection.close()
 
 
+def import_db():
+	from arcipelago.event import Event, BadEventAttrError
+	
+	path_db_file = input("Enter path to db file:")
+	events = read_events(path_db_file)
+	
+	for event in events:
+		try:
+			insert_event(Event().load_from_res(event))
+		except BadEventAttrError:
+			print(f'Could not load event {event[0]} {event[1]}')
+
+
+def read_events(db_name):
+	conn = sqlite3.connect(
+		db_name,
+		detect_types=sqlite3.PARSE_DECLTYPES
+	)
+	cursor = conn.cursor()
+	events = cursor.execute("SELECT * FROM event").fetchall()
+	return events
+
+
 def get_connection():
 	return sqlite3.connect(
 			"arcipelago.db",
