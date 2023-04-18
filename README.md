@@ -13,4 +13,11 @@ A moderated event platform for Telegram.
 
 ## How it works
 
+## Instances
+This software powers the following Telegram events channels:
+- [Apuliacore](https://t.me/apuliacore) | Puglia, IT
+
+## Support
+If this software is useful for you or you would simply like to show us your support, you could [buy us a coffee](https://ko-fi.com/apuliacore) 😊 
+
 ## License
