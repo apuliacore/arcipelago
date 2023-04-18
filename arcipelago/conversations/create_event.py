@@ -15,7 +15,8 @@ from arcipelago.conversations import keyboards as K
 
 (ASK_NAME, ASK_VENUE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE, 
  ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE, ASK_CATEGORY_PATH_END_TIME, 
- ASK_DESCRIPTION, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT, ROUTE_SAME_EVENT) = range(13)
+ ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT, 
+ ROUTE_SAME_EVENT) = range(14)
 TOKEN = chatbot_token
 
 
@@ -153,14 +154,26 @@ def ask_description(update, context) -> int:
         return ASK_DESCRIPTION
     context.user_data['event'].categories = category
     update.message.reply_text(text.ask_description)
-    return ASK_CONFIRM_SUBMISSION
+    return ASK_PUBLICATION_DATE
+
+
+def ask_publication_date(update, context) -> int:
+    """Stores event description and asks the user
+    the publication date for the event."""
+    try:
+        context.user_data['event'].description = update.message.text
+        update.message.reply_text(text.ask_publication_date)
+        return ASK_CONFIRM_SUBMISSION
+    except BadEventAttrError as e:
+        update.message.reply_text(str(e))
+        return ASK_PUBLICATION_DATE
 
 
 def ask_confirm_submission(update, context) -> int:
-    """Stores event description and asks the user to confirm
+    """Stores publication date and asks the user to confirm
     the submission of the event."""
     try:
-        context.user_data['event'].description = update.message.text
+        context.user_data['event'].publication_date = update.message.text.strip()
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ASK_CONFIRM_SUBMISSION
@@ -255,6 +268,7 @@ event_conv_handler = ConversationHandler(
                           MessageHandler(filters.Filters.regex("No"), ask_category_path_no_end_time)],
             ASK_CATEGORY_PATH_END_TIME: [MessageHandler(filters.Filters.text, ask_category_path_end_time)],
             ASK_DESCRIPTION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_description)],
+            ASK_PUBLICATION_DATE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_publication_date)],
             ASK_CONFIRM_SUBMISSION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_confirm_submission)],
             PROCESS_EVENT: [MessageHandler(filters.Filters.regex("Sì"), process_submitted_event),
                        MessageHandler(filters.Filters.regex("No"), cancel)],

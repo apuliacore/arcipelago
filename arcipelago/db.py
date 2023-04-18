@@ -64,13 +64,14 @@ def insert_event(event):
 	event_dict = event.to_dict()
 	execute_query(
 		"INSERT INTO event (name, venue, verified_venue_id,\
-		 start_datetime, end_datetime, description, confirmed, published, price, categories)\
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		 start_datetime, end_datetime, publication_date, description, confirmed, published, price, categories)\
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		(event_dict['name'],
 		 event_dict['venue'],
 		 event_dict['verified_venue_id'],
 		 event_dict['start_datetime'],
 		 event_dict['end_datetime'],
+		 event_dict['publication_date'],
 		 event_dict['description'],
 		 event_dict['confirmed'],
 		 event_dict['published'],
@@ -102,6 +103,14 @@ def get_events_next_n_days_not_published(n_days=7):
 	return execute_select_query(
 		"SELECT * FROM event WHERE start_datetime > ? AND start_datetime < ? AND published = False AND confirmed = True",
 		(datetime_now, datetime_n_days_from_now)
+	)
+
+
+def get_events_to_be_published_today():
+	date_now = datetime.datetime.now().date()
+	return execute_select_query(
+		"SELECT * FROM event WHERE publication_date = ? AND published = False AND confirmed = True",
+		(date_now,)
 	)
 
 

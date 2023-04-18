@@ -129,6 +129,40 @@ def test_end_time_setter():
 	assert event.end_time.strftime('%H:%M') == end_time.strftime('%H:%M')
 
 
+def test_publication_date_setter():
+	event = Event()
+	event.start_date = (datetime.datetime.now().date() + datetime.timedelta(days=2)).strftime('%d.%m.%Y')
+
+	# wrong format
+	try:
+		event.publication_date = '13/12/2022'
+	except Exception as e:
+		assert 'gg.mm.aaaa' in str(e)
+	
+	# past date
+	try:
+		event.publication_date = (datetime.datetime.now().date() - datetime.timedelta(days=1)).strftime('%d.%m.%Y')
+	except Exception as e:
+		assert 'passata' in str(e)
+
+	# publication date after start date
+	try:
+		event.publication_date = (event.start_date + datetime.timedelta(days=1)).strftime('%d.%m.%Y')
+	except Exception as e:
+		assert 'successiva' in str(e)
+
+	# wrong type
+	try:
+		event.publication_date = 13122022
+	except Exception as e:
+		assert 'type' in str(e)
+
+	# correct assignment
+	publication_date = event.start_date - datetime.timedelta(days=1)
+	event.publication_date = publication_date.strftime('%d.%m.%Y')
+	assert event.publication_date == publication_date
+
+
 def test_check_events_collision():
 	event = Event()
 	event.name = "Nome"

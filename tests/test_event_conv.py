@@ -5,10 +5,11 @@ from test_db import get_dummy_event
 from arcipelago.event import Event
 from arcipelago.conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date,
-	ask_description, ask_confirm_submission)
+	ask_description, ask_publication_date, ask_confirm_submission)
 from arcipelago.conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_START_DATE, 
 	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
-	ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT)
+	ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION, 
+	PROCESS_EVENT)
 
 
 def test_ask_poster():
@@ -121,17 +122,37 @@ def test_ask_description():
 
 	update = MockUpdate(MockMessage('🎹 musica'))
 	
-	assert ask_description(update, context) == ASK_CONFIRM_SUBMISSION
+	assert ask_description(update, context) == ASK_PUBLICATION_DATE
 
 
-def test_ask_confirm_submission():
+def test_ask_publication_date():
 	# too long description
 	update = MockUpdate(MockMessage('prova'*300))
 	context = MockContext(get_dummy_event())
-
-	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
+	assert ask_publication_date(update, context) == ASK_PUBLICATION_DATE
 
 	update = MockUpdate(MockMessage('prova'))
 	context = MockContext(get_dummy_event())
+	assert ask_publication_date(update, context) == ASK_CONFIRM_SUBMISSION
 
+
+def test_ask_confirm_submission():
+	# wrong format
+	update = MockUpdate(MockMessage('31/12/2022'))
+	context = MockContext()
+	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
+
+	# wrong type
+	update = MockUpdate(MockMessage('ciao'))
+	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
+
+	# wrong values
+	update = MockUpdate(MockMessage('30.2.100'))
+	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
+
+	now_date = datetime.datetime.now().date().strftime('%d.%m.%Y')
+	update = MockUpdate(MockMessage(now_date))
+	event = get_dummy_event()
+	event.start_date = now_date
+	context = MockContext(event)
 	assert ask_confirm_submission(update, context) == PROCESS_EVENT

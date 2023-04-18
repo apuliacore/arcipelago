@@ -46,6 +46,7 @@ class Event(object):
     _end_date: datetime.date = None
     _end_time: datetime.time = None
     _end_datetime: datetime.datetime = None
+    _publication_date: datetime.date = None
     _confirmed: bool = False
     _published: bool = False
     _categories: str = ''
@@ -94,6 +95,10 @@ class Event(object):
             return datetime.datetime.combine(self.start_date, self.end_time)
         else:
             return None
+
+    @property
+    def publication_date(self):
+        return self._publication_date
 
     @property
     def confirmed(self):
@@ -258,6 +263,27 @@ class Event(object):
         else:
             raise BadEventAttrError(f"Start datetime should be of type {datetime.time} or {str}, not {type(value)}")
 
+    @publication_date.setter
+    def publication_date(self, value):
+        if isinstance(value, str):
+            if re.match(r"((\d{2}|\d{1})(\.)(\d{2}|\d{1})(\.)\d{4})", value) is None:
+                raise BadEventAttrError("La data che hai inserito ha un formato non valido. Manda una data in formato gg.mm.aaaa")
+            else:
+                dd, mm, yyyy = (int(t) for t in value.split('.'))
+                input_date = datetime.date(day=dd, month=mm, year=yyyy)
+                date_today = datetime.datetime.now().date()
+                if input_date < datetime.datetime.now().date():
+                    raise BadEventAttrError("La data che hai inserito è passata! Inserisci una data futura:")
+                elif input_date > self.start_date:
+                    raise BadEventAttrError("La data che hai inserito è successiva alla data dell'evento! Inserisci una data precedente:")
+                self._publication_date = input_date
+        elif isinstance(value, datetime.date):
+            if value > self.start_date:
+                raise BadEventAttrError("La data che hai inserito è successiva alla data dell'evento! Inserisci una data precedente:")
+            self._publication_date = value                
+        else:
+            raise BadEventAttrError(f"Start datetime should be of type {datetime.date} or {str}, not {type(value)}")
+
     def load_from_res(self, res):
         self.id = res[0]
         self.name = res[1]
@@ -317,6 +343,7 @@ class Event(object):
             'verified_venue_id': None ,
             'start_datetime': self.start_datetime,
             'end_datetime': self.end_datetime,
+            'publication_date': self.publication_date,
             'description': self.description,
             'confirmed': self.confirmed,
             'published': self.published,

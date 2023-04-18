@@ -1,7 +1,7 @@
 import datetime
 import telegram
 from arcipelago.config import main_channel 
-from arcipelago.db import get_events_next_n_days_not_published, set_published, get_events_in_date
+from arcipelago.db import get_events_to_be_published_today, set_published, get_events_in_date
 from arcipelago.event import Event
 from arcipelago.extra.gcalendar import add_event_to_gcalendar
 
@@ -20,7 +20,7 @@ def get_next_hour_datetime(hour: int):
 
 
 def daily_publication_callback(context):
-    events_res = get_events_next_n_days_not_published(n_days=7)
+    events_res = get_events_to_be_published_today()
     for event_res in events_res:
         event = Event()
         event.load_from_res(event_res)
