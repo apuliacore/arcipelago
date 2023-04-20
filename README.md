@@ -12,12 +12,15 @@ A moderated event platform for Telegram.
 6. `poetry run arcipelago:run`
 
 ## How it works
+This software powers a virtual event wall on Telegram.
+Through the Telegram bot, users can propose events to a group of admins who can accept or reject publication.
+Events are published on a public channel, where subscribed users also receive reminders about daily events.
+Optionally, events can be published on a shared Google Calendar.
 
 ## Instances
 This software powers the following Telegram events channels:
 - [Apuliacore](https://t.me/apuliacore) | Puglia, IT
 
 ## Support
-If this software is useful for you or you would simply like to show us your support, you could [buy us a coffee](https://ko-fi.com/apuliacore) 😊 
+If this software is useful for you or you would simply like to show us your support, you could [buy us a coffee](https://ko-fi.com/apuliacore) 😊
 
-## License
