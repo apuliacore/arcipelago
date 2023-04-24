@@ -39,7 +39,7 @@ def check_event_will_get_published(event):
     date_today = datetime.datetime.now().date()
     time_now = datetime.datetime.now().time()
 
-    if event.start_date != date_today:
+    if event.publication_date != date_today:
         return True
     else:
         if time_now > datetime.time(13):
