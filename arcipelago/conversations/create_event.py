@@ -50,7 +50,7 @@ def ask_event_type(update, context) -> int:
     """Stores event venue and asks event type."""
     try:
         context.user_data['event'].venue = update.message.text
-        update.message.reply_text(text.ask_event_type)
+        update.message.reply_text(text.ask_event_type, reply_markup=K.event_type)
         return ASK_START_DATE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
