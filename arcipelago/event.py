@@ -46,10 +46,13 @@ class Event(object):
     _end_date: datetime.date = None
     _end_time: datetime.time = None
     _end_datetime: datetime.datetime = None
+    _from_chat: int = None
+    _telegram_link: str = ''
     _publication_date: datetime.date = None
     _confirmed: bool = False
     _published: bool = False
     _categories: str = ''
+    _event_type: str = ''
 
     @property
     def id(self):
@@ -97,6 +100,14 @@ class Event(object):
             return None
 
     @property
+    def from_chat(self):
+        return self._from_chat
+
+    @property
+    def telegram_link(self):
+        return self._telegram_link
+
+    @property
     def publication_date(self):
         return self._publication_date
 
@@ -111,6 +122,10 @@ class Event(object):
     @property
     def categories(self):
         return self._categories
+
+    @property
+    def event_type(self):
+        return self._type
 
     @id.setter
     def id(self, value):
@@ -206,7 +221,6 @@ class Event(object):
         else:
             raise BadEventAttrError(f"Start datetime should be of type {datetime.time} or {str}, not {type(value)}")
 
-
     @end_datetime.setter
     def end_datetime(self, value):
         if value is None:
@@ -283,6 +297,28 @@ class Event(object):
             self._publication_date = value                
         else:
             raise BadEventAttrError(f"Start datetime should be of type {datetime.date} or {str}, not {type(value)}")
+
+    @from_chat.setter
+    def from_chat(self, value):
+        if isinstance(value, int):
+            self.from_chat = value
+        else:
+            raise BadEventAttrError(f"from_chat should be of type int, not {type(value)}.")   
+
+    @telegram_link.setter
+    def telegram_link(self, value):
+        # TODO: add check link format
+        if isinstance(value, str):
+            self._telegram_link = value
+        else:
+            raise BadEventAttrError(f"telegram_link should be of type str not {type(value)}")
+
+    @event_type.setter
+    def event_type(self, value):
+        if isinstance(value, str):
+            self._event_type = value
+        else:
+            raise BadEventAttrError(f"event_type should be of type str not {type(value)}")
 
     def load_from_res(self, res):
         self.id = res[0]

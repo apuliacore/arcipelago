@@ -4,7 +4,8 @@
 import traceback
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, filters
+from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler,
+import telegram.ext.filters.Filters as F
 from arcipelago.config import notification_channel, authorized_users, chatbot_token
 from arcipelago.db import insert_event, set_confirmed, get_event_from_id
 from arcipelago.event import category2emoji, Event, check_events_collision, BadEventAttrError
@@ -13,10 +14,10 @@ from arcipelago.conversations import text
 from arcipelago.conversations import keyboards as K
 
 
-(ASK_NAME, ASK_VENUE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE, 
- ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE, ASK_CATEGORY_PATH_END_TIME, 
- ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT, 
- ROUTE_SAME_EVENT) = range(14)
+(ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE,
+ ASK_END_TIME_PATH_END_DATE, ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE, 
+ ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION, 
+ PROCESS_EVENT, ROUTE_SAME_EVENT) = range(15)
 TOKEN = chatbot_token
 
 
@@ -40,22 +41,36 @@ def ask_event_venue(update, context) -> int:
     try:
         context.user_data['event'].name = update.message.text
         update.message.reply_text(text.ask_venue_name)
-        return ASK_START_DATE
+        return ASK_EVENT_TYPE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ASK_VENUE
 
-
-def ask_start_date(update, context) -> int:
-    """Stores event venue and asks for start date."""
+def ask_event_type(update, context) -> int:
+    """Stores event venue and asks event type."""
     try:
         context.user_data['event'].venue = update.message.text
-        update.message.reply_text(text.ask_start_date)
-        return ASK_START_TIME
+        update.message.reply_text(text.ask_event_type)
+        return ASK_START_DATE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return ASK_START_DATE
+        return ASK_EVENT_TYPE
     
+
+def ask_start_date(update, context) -> int:
+    """Stores event type and ask start date."""
+    user_input = update.message.text.strip()
+    if user_input not in K.event_types:
+        update.message.reply_text(text.help_event_type)
+        return ASK_START_DATE
+    else:
+        try:
+            context.user_data['event'].event_type = user_input
+            update.message.reply_text(text.ask_start_date)
+            return ASK_START_TIME
+        except BadEventAttrError as e:
+            update.message.reply_text(str(e))
+            return ASK_START_DATE
 
 def ask_start_time(update, context) -> int:
     """Stores start date and asks start time."""
@@ -255,23 +270,24 @@ def cancel(update, context) -> int:
 event_conv_handler = ConversationHandler(
         entry_points=[CommandHandler("evento", ask_poster)],
         states={
-            ASK_NAME: [MessageHandler(filters.Filters.photo, ask_event_name)],
-            ASK_VENUE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_event_venue)],
-            ASK_START_DATE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_start_date)],
-            ASK_START_TIME: [MessageHandler(filters.Filters.text, ask_start_time)],
-            ROUTE_SAME_EVENT: [MessageHandler(filters.Filters.text, route_same_event)],
-            ASK_ADD_END_DATE: [MessageHandler(filters.Filters.text, ask_add_end_date)],
-            ASK_END_DATE: [MessageHandler(filters.Filters.regex("Sì"), ask_end_date),
-                        MessageHandler(filters.Filters.regex("No"), ask_add_end_time)],
-            ASK_END_TIME_PATH_END_DATE: [MessageHandler(filters.Filters.text, ask_end_time_path_end_date)],
-            ASK_END_TIME_PATH_NO_END_DATE: [MessageHandler(filters.Filters.regex("Sì"), ask_end_time_path_no_end_date),
-                          MessageHandler(filters.Filters.regex("No"), ask_category_path_no_end_time)],
-            ASK_CATEGORY_PATH_END_TIME: [MessageHandler(filters.Filters.text, ask_category_path_end_time)],
-            ASK_DESCRIPTION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_description)],
-            ASK_PUBLICATION_DATE: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_publication_date)],
-            ASK_CONFIRM_SUBMISSION: [MessageHandler(filters.Filters.text & (~ filters.Filters.command), ask_confirm_submission)],
-            PROCESS_EVENT: [MessageHandler(filters.Filters.regex("Sì"), process_submitted_event),
-                       MessageHandler(filters.Filters.regex("No"), cancel)],
+            ASK_NAME: [MessageHandler(F.photo, ask_event_name)],
+            ASK_VENUE: [MessageHandler(F.text & (~ F.command), ask_event_venue)],
+            ASK_EVENT_TYPE: [MessageHandler(F.text & (~ F.command), ask_event_type)],
+            ASK_START_DATE: [MessageHandler(F.text & (~ F.command), ask_start_date)],
+            ASK_START_TIME: [MessageHandler(F.text, ask_start_time)],
+            ROUTE_SAME_EVENT: [MessageHandler(F.text, route_same_event)],
+            ASK_ADD_END_DATE: [MessageHandler(F.text, ask_add_end_date)],
+            ASK_END_DATE: [MessageHandler(F.regex("Sì"), ask_end_date),
+                        MessageHandler(F.regex("No"), ask_add_end_time)],
+            ASK_END_TIME_PATH_END_DATE: [MessageHandler(F.text, ask_end_time_path_end_date)],
+            ASK_END_TIME_PATH_NO_END_DATE: [MessageHandler(F.regex("Sì"), ask_end_time_path_no_end_date),
+                          MessageHandler(F.regex("No"), ask_category_path_no_end_time)],
+            ASK_CATEGORY_PATH_END_TIME: [MessageHandler(F.text, ask_category_path_end_time)],
+            ASK_DESCRIPTION: [MessageHandler(F.text & (~ F.command), ask_description)],
+            ASK_PUBLICATION_DATE: [MessageHandler(F.text & (~ F.command), ask_publication_date)],
+            ASK_CONFIRM_SUBMISSION: [MessageHandler(F.text & (~ F.command), ask_confirm_submission)],
+            PROCESS_EVENT: [MessageHandler(F.regex("Sì"), process_submitted_event),
+                       MessageHandler(F.regex("No"), cancel)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
