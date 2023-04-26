@@ -4,7 +4,7 @@
 import traceback
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler,
+from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler
 import telegram.ext.filters.Filters as F
 from arcipelago.config import notification_channel, authorized_users, chatbot_token
 from arcipelago.db import insert_event, set_confirmed, get_event_from_id
