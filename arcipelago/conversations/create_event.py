@@ -23,11 +23,10 @@ TOKEN = chatbot_token
 
 def ask_poster(update, context) -> int:
     """Starts adding an event asking for picture of event"""
-    print(update.message.sender_chat.id)
     print(update.message.from_user.id)
     update.message.reply_text(text.poster)
     context.user_data['event'] = Event()
-    context.user_data['event'].from_chat = update.message.sender_chat.id
+    context.user_data['event'].from_chat = update.message.from_user.id
     return ASK_NAME
 
 
