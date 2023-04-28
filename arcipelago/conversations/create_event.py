@@ -234,9 +234,9 @@ def process_submitted_event(update, context) -> int:
         else:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
-        event_id = insert_event(event)
+        event.id = insert_event(event)
         file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
-        file_locandina.download(f'locandine/{event_id}.jpg')
+        file_locandina.download(f'locandine/{event.id}.jpg')
         update.message.reply_text(text.ack_event_accepted_admin)
         update.message.reply_text(f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
             "Puoi usarlo con il comando /modifica per cambiare alcune informazioni sull'evento prima della pubblicazione.",
@@ -250,9 +250,9 @@ def process_submitted_event(update, context) -> int:
                 caption=event.html(),
                 parse_mode=telegram.ParseMode.HTML
             )
-        event_id = insert_event(event)
+        event.id = insert_event(event)
         file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
-        file_locandina.download(f'locandine/{event_id}.jpg')
+        file_locandina.download(f'locandine/{event.id}.jpg')
     
         if username is not None:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
@@ -260,8 +260,8 @@ def process_submitted_event(update, context) -> int:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=text.ask_confirm_publish_event,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Sì', callback_data=f"{user_id} {event_id} 1"),
-                                                InlineKeyboardButton(text='No', callback_data=f"{user_id} {event_id} 0")]]))
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Sì', callback_data=f"{user_id} {event.id} 1"),
+                                                InlineKeyboardButton(text='No', callback_data=f"{user_id} {event.id} 0")]]))
         update.message.reply_text(text.ack_event_submitted)
     return ConversationHandler.END
 
