@@ -232,6 +232,7 @@ def process_submitted_event(update, context) -> int:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
         else:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
+        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
         update.message.reply_text(text.ack_event_accepted_admin)
         event_id = insert_event(event)
         update.message.reply_text(f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
@@ -251,6 +252,7 @@ def process_submitted_event(update, context) -> int:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
         else:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
+        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=text.ask_confirm_publish_event,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Sì', callback_data=f"{user_id} {event_id} 1"),
                                                 InlineKeyboardButton(text='No', callback_data=f"{user_id} {event_id} 0")]]))
