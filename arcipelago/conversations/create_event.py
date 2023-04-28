@@ -25,7 +25,7 @@ def ask_poster(update, context) -> int:
     """Starts adding an event asking for picture of event"""
     update.message.reply_text(text.poster)
     context.user_data['event'] = Event()
-    context.user_data['event'].from_chat = update.message.from_user.id
+    context.user_data['event'].from_chat = update.message.sender_chat.id
     return ASK_NAME
 
 
