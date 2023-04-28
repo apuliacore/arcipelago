@@ -234,8 +234,8 @@ def process_submitted_event(update, context) -> int:
         else:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
-        update.message.reply_text(text.ack_event_accepted_admin)
         event_id = insert_event(event)
+        update.message.reply_text(text.ack_event_accepted_admin)
         update.message.reply_text(f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
             "Puoi usarlo con il comando /modifica per cambiare alcune informazioni sull'evento prima della pubblicazione.",
             parse_mode=telegram.ParseMode.HTML)
