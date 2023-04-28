@@ -301,7 +301,7 @@ class Event(object):
     @from_chat.setter
     def from_chat(self, value):
         if isinstance(value, int):
-            self.from_chat = value
+            self._from_chat = value
         else:
             raise BadEventAttrError(f"from_chat should be of type int, not {type(value)}.")   
 
