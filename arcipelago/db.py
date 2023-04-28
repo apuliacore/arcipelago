@@ -64,19 +64,22 @@ def insert_event(event):
 	event_dict = event.to_dict()
 	execute_query(
 		"INSERT INTO event (name, venue, verified_venue_id,\
-		 start_datetime, end_datetime, publication_date, description, confirmed, published, price, categories)\
+		 start_datetime, end_datetime, description, confirmed,\
+		 published, price, categories, from_chat, telegram_link, publication_date)\
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		(event_dict['name'],
 		 event_dict['venue'],
 		 event_dict['verified_venue_id'],
 		 event_dict['start_datetime'],
 		 event_dict['end_datetime'],
-		 event_dict['publication_date'],
 		 event_dict['description'],
 		 event_dict['confirmed'],
 		 event_dict['published'],
 		 event_dict['price'],
-		 event_dict['categories'])
+		 event_dict['categories'],
+		 event_dict['from_chat'],
+		 event_dict['telegram_link'],
+		 event_dict['publication_date'])
 	)
 	return get_id_last_added_in_table('event')[0][0]
 

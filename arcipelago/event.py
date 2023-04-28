@@ -379,12 +379,14 @@ class Event(object):
             'verified_venue_id': None ,
             'start_datetime': self.start_datetime,
             'end_datetime': self.end_datetime,
-            'publication_date': self.publication_date,
             'description': self.description,
             'confirmed': self.confirmed,
             'published': self.published,
             'price': 0,
             'categories': self.categories,
+            'from_chat': self.from_chat,
+            'telegram_link': None,
+            'publication_date': self.publication_date,
         }
 
     def get_str_repr(self):
