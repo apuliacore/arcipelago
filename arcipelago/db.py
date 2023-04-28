@@ -66,7 +66,7 @@ def insert_event(event):
 		"INSERT INTO event (name, venue, verified_venue_id,\
 		 start_datetime, end_datetime, description, confirmed,\
 		 published, price, categories, from_chat, telegram_link, publication_date)\
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		(event_dict['name'],
 		 event_dict['venue'],
 		 event_dict['verified_venue_id'],
