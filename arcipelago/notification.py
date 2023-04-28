@@ -42,7 +42,7 @@ def check_event_will_get_published(event):
     if event.publication_date != date_today:
         return True
     else:
-        if time_now > datetime.time(13):
+        if time_now > datetime.time(10):
             return False
         else:
             return True
