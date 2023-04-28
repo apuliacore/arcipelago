@@ -235,6 +235,8 @@ def process_submitted_event(update, context) -> int:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
         telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
         event_id = insert_event(event)
+        file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
+        file_locandina.download(f'locandine/{event_id}.jpg')
         update.message.reply_text(text.ack_event_accepted_admin)
         update.message.reply_text(f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
             "Puoi usarlo con il comando /modifica per cambiare alcune informazioni sull'evento prima della pubblicazione.",
@@ -249,6 +251,9 @@ def process_submitted_event(update, context) -> int:
                 parse_mode=telegram.ParseMode.HTML
             )
         event_id = insert_event(event)
+        file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
+        file_locandina.download(f'locandine/{event_id}.jpg')
+    
         if username is not None:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
         else:
@@ -258,9 +263,6 @@ def process_submitted_event(update, context) -> int:
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Sì', callback_data=f"{user_id} {event_id} 1"),
                                                 InlineKeyboardButton(text='No', callback_data=f"{user_id} {event_id} 0")]]))
         update.message.reply_text(text.ack_event_submitted)
-
-    file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
-    file_locandina.download(f'locandine/{event_id}.jpg')
     return ConversationHandler.END
 
 
