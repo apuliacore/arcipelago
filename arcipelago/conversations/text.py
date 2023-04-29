@@ -50,9 +50,9 @@ ack_feedback_sent_ident = "Il tuo messaggio è stato inviato agli admin, ti rico
 
 # donate
 intro_donate = "Uau sarebbe bellissimo!"
-info_donate = "Apuliacore sostiene alcune piccole spese ricorrenti per la creazione e gestione \
-				di servizi e strumenti per la comunità. Con il tuo contributo ci aiuteresti a: \
-				• mantenere attivi i server che ospitano il bot e il nostro sito web \
-				• supportare il lavoro dietro lo sviluppo del bot \
-				• promuovere e pubblicizzare Apuliacore attraverso altri mezzi (es. stampa di adesivi e materiale pubblicitario)."
+info_donate = "Apuliacore sostiene alcune piccole spese ricorrenti per la creazione e gestione "
+			  "di servizi e strumenti per la comunità. Con il tuo contributo ci aiuteresti a: "
+			  "• mantenere attivi i server che ospitano il bot e il nostro sito web"
+			  "• supportare il lavoro dietro lo sviluppo del bot"
+			  "• promuovere e pubblicizzare Apuliacore attraverso altri mezzi (es. stampa di adesivi e materiale pubblicitario)."
 link_donate = "Se vuoi supportarci, puoi farlo tramite ko-fi a questo link: https://ko-fi.com/apuliacore 🌼\nGrazie!"
