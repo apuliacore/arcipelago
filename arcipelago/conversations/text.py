@@ -46,3 +46,13 @@ ask_anon = "Ok, vuoi rimanere anonim*? (in questo caso, non potrai essere ricont
 help_no_username = "Il tuo account Telegram non ha uno username associato, perciò non potremo ricontattarti. Ricorda che se vuoi puoi scriverci anche su Instagram (@apuliacore)."
 ack_feedback_sent_anon = "Il tuo messaggio è stato inviato anonimamente agli admin. Grazie!"
 ack_feedback_sent_ident = "Il tuo messaggio è stato inviato agli admin, ti ricontatteremo se necessario. Grazie!"
+
+
+# donate
+intro_donate = "Uau sarebbe bellissimo!"
+info_donate = "Apuliacore sostiene alcune piccole spese ricorrenti per la creazione e gestione \
+				di servizi e strumenti per la comunità. Con il tuo contributo ci aiuteresti a: \
+				• mantenere attivi i server che ospitano il bot e il nostro sito web \
+				• supportare il lavoro dietro lo sviluppo del bot \
+				• promuovere e pubblicizzare Apuliacore attraverso altri mezzi (es. stampa di adesivi e materiale pubblicitario)."
+link_donate = "Se vuoi supportarci, puoi farlo tramite ko-fi a questo link: https://ko-fi.com/apuliacore 🌼\nGrazie!"

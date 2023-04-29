@@ -41,18 +41,11 @@ def oggi(update, context) -> int:
     return ConversationHandler.END
 
 
-def giorno(update, context) -> int:
-    """Returns a specific date's events."""
-    if update.message.text.strip() == "/giorno":
-        update.message.reply_text("Inserisci la data dopo il comando, ad esempio così: /giorno 17.02.2023")
-    else :
-        date_selected = datetime.datetime.strptime(update.message.text[8:], '%d.%m.%Y')
-        selected_date_events = [Event().load_from_res(e) for e in get_events_in_date(date_selected)]
-        if len(selected_date_events) > 0:
-            update.message.reply_text("\n\n".join([f"Eventi di oggi {date_selected.strftime('%d.%m.%Y')}"] + [event.html(short=True) for event in selected_date_events]),
-                                    parse_mode=telegram.ParseMode.HTML)
-        else:
-            update.message.reply_text(text.no_event)
+def dona(update, context) -> int:
+    """Shows info about making a donation."""
+    update.message.reply_text(text.intro_donate)
+    update.message.reply_text(text.info_donate)
+    update.message.reply_text(text.link_donate)
     return ConversationHandler.END
 
 
@@ -68,7 +61,7 @@ def main():
     
     start_handler = CommandHandler("start", start)
     todays_events_handler = CommandHandler("oggi", oggi)
-    giorno_handler = CommandHandler("giorno", giorno)
+    donation_handler = CommandHandler("dona", dona)
     disp.job_queue.run_repeating(daily_publication_callback, interval=daily_update_interval, first=get_next_hour_datetime(10))
     disp.job_queue.run_repeating(daily_events_callback, interval=60*60*24, first=get_next_hour_datetime(17))
     disp.add_handler(start_handler)
@@ -77,7 +70,7 @@ def main():
     disp.add_handler(todays_events_handler)
     disp.add_handler(feedback_conv_handler)
     disp.add_handler(callback_query_handler)
-    disp.add_handler(giorno_handler)
+    disp.add_handler(donation_handler)
     upd.start_polling()
     upd.idle()
 
