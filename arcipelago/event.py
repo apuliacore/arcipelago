@@ -39,19 +39,19 @@ class Event(object):
     _id: int = None
     _name: str = ''
     _venue: str = ''
-    _description: str = ''
     _start_date: datetime.date = None
     _start_time: datetime.time = None
     _start_datetime: datetime.datetime = None
     _end_date: datetime.date = None
     _end_time: datetime.time = None
     _end_datetime: datetime.datetime = None
-    _from_chat: int = None
-    _telegram_link: str = ''
-    _publication_date: datetime.date = None
+    _description: str = ''
     _confirmed: bool = False
     _published: bool = False
     _categories: str = ''
+    _from_chat: int = None
+    _telegram_link: str = ''
+    _publication_date: datetime.date = None
     _event_type: str = ''
 
     @property
@@ -335,6 +335,9 @@ class Event(object):
         self.confirmed = res[7]
         self.published = res[8]
         self.categories = res[10]
+        self.from_chat = res[11]
+        self.telegram_link = res[12]
+        self.publication_date = res[13]
         return self
 
     def html(self, short=False):
