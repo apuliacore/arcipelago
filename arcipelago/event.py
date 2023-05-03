@@ -335,9 +335,12 @@ class Event(object):
         self.confirmed = res[7]
         self.published = res[8]
         self.categories = res[10]
-        self.from_chat = res[11]
-        self.telegram_link = res[12]
-        self.publication_date = res[13]
+        if res[11] is not None:
+            self.from_chat = res[11]
+        if res[12] is not None:
+            self.telegram_link = res[12]
+        if res[13] is not None:
+            self.publication_date = res[13]
         return self
 
     def html(self, short=False):
