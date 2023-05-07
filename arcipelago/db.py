@@ -7,16 +7,16 @@ def init_db(development=False):
 	db_connection = sqlite3.connect(
 		"arcipelago.db",
 		detect_types=sqlite3.PARSE_DECLTYPES
-	)	
+	)
 
 	cursor = db_connection.cursor()
 
 	cursor.execute("DROP TABLE IF EXISTS event;")
 	db_connection.commit()
-	
+
 	cursor.execute("DROP TABLE IF EXISTS event_old;")
 	db_connection.commit()
-	
+
 	cursor.execute("DROP TABLE IF EXISTS venue;")
 	db_connection.commit()
 
@@ -32,10 +32,10 @@ def init_db(development=False):
 
 def import_db():
 	from arcipelago.event import Event, BadEventAttrError
-	
+
 	path_db_file = input("Enter path to db file:")
 	events = read_events(path_db_file)
-	
+
 	for event in events:
 		try:
 			insert_event(Event().load_from_res(event))

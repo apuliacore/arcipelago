@@ -23,4 +23,3 @@ This software powers the following Telegram events channels:
 
 ## Support
 If this software is useful for you or you would simply like to show us your support, you could [buy us a coffee](https://ko-fi.com/apuliacore) 😊
-

@@ -58,7 +58,7 @@ def cancel(update, context) -> int:
 def main():
     upd = Updater(TOKEN, use_context=True)
     disp = upd.dispatcher
-    
+
     start_handler = CommandHandler("start", start)
     todays_events_handler = CommandHandler("oggi", oggi)
     donation_handler = CommandHandler("dona", dona)

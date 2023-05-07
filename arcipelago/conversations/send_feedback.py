@@ -12,7 +12,7 @@ def feedback(update, context) -> int:
     """Asks feedback message."""
     update.message.reply_text(text.intro_feedback)
     return ASK_ANON
-    
+
 
 def ask_anon(update, context) -> int:
     """Stores feedback and asks if user wants to be anonymous."""

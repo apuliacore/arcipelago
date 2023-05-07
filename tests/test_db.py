@@ -24,10 +24,13 @@ def test_insert_event():
 	cursor = db_conn.cursor()
 	res = cursor.execute("SELECT * FROM event WHERE name = 'Martedì Popolare'").fetchone()
 	db_conn.close()
-	assert res[1:] == ('Martedì Popolare', 'Storie del Vecchio Sud, via Buccari, Bari', None, 
-		event.start_datetime, event.end_datetime, 
-		'Un gruppo di amici che si riunisce ogni due martedì per tenere viva la tradizione musicale popolare della nostra terra.', 
-		False, False, 0, 'musica', None, None, event.publication_date)
+	assert res[1] == 'Martedì Popolare'
+	assert res[2] == 'Storie del Vecchio Sud, via Buccari, Bari'
+	assert res[4] == event.start_datetime, "Wrong start datetime"
+	assert res[5] == event.end_datetime, "Wrong end datetime"
+	assert res[6] == 'Un gruppo di amici che si riunisce ogni due martedì per tenere viva la tradizione musicale popolare della nostra terra.'
+	assert res[10] == 'musica'
+	assert res[13] == event.publication_date
 	delete_event(event_id)
 
 

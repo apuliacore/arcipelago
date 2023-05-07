@@ -47,7 +47,7 @@ def confirm_edit_field(update, context) -> int:
     error_str = ''
     field = context.user_data['field_to_edit']
     event = context.user_data['event_to_edit']
-    
+
     try:
         if field == "Data inizio":
             event.start_date = user_input
@@ -107,4 +107,3 @@ edit_conv_handler = ConversationHandler(
         },
         fallbacks=[CommandHandler("cancel", cancel)],
 )
-    

@@ -143,7 +143,7 @@ class Event(object):
     def description(self, value):
         self._description = value
         if len(self.html()) > 1024:  # limit of photo captions on Telegram
-            self._description = ''    
+            self._description = ''
             raise BadEventAttrError("La descrizione dell'evento è troppo lunga per Telegram :/ Inviane una più breve.")
         else:
             self._description = value
@@ -266,7 +266,7 @@ class Event(object):
                     self._end_time = time_input
                 else:
                     time_input = datetime.time(hour=hh, minute=mm)
-                    self._end_time = time_input                    
+                    self._end_time = time_input
         elif isinstance(value, datetime.time):
             if self.end_date is None or (self.end_date == self.start_date):
                 if not self.start_time < value:
@@ -294,7 +294,7 @@ class Event(object):
         elif isinstance(value, datetime.date):
             if value > self.start_date:
                 raise BadEventAttrError("La data che hai inserito è successiva alla data dell'evento! Inserisci una data precedente:")
-            self._publication_date = value                
+            self._publication_date = value
         else:
             raise BadEventAttrError(f"Start datetime should be of type {datetime.date} or {str}, not {type(value)}")
 
@@ -303,7 +303,7 @@ class Event(object):
         if isinstance(value, int):
             self._from_chat = value
         else:
-            raise BadEventAttrError(f"from_chat should be of type int, not {type(value)}.")   
+            raise BadEventAttrError(f"from_chat should be of type int, not {type(value)}.")
 
     @telegram_link.setter
     def telegram_link(self, value):
@@ -352,7 +352,7 @@ class Event(object):
                 end_datetime = self.end_time.strftime('%H:%M')
             else:
                 end_datetime = self.end_datetime.strftime('%d.%m.%Y | %H:%M')
-            
+
         venue = self.venue
         description = html.escape(self.description)
         emoji = category2emoji[self.categories] if self.categories else ""
@@ -364,14 +364,14 @@ class Event(object):
                 res_html +=  f" - {end_datetime}"
             res_html += f"""\n📍{venue}\n"""
             res_html += f"""<code>{name}</code>"""
-        
+
         else:
             res_html = f"<code>{name}</code>\n"
             res_html += f"📅{start_datetime}"
             if self.end_datetime is not None:
                 res_html +=  f" - {end_datetime}"
             res_html += f"""\n📍{venue}\n\n"""
-            res_html += f"""{description}"""        
+            res_html += f"""{description}"""
 
         return res_html
 

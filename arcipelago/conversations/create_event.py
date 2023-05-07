@@ -15,8 +15,8 @@ from arcipelago.conversations import keyboards as K
 
 
 (ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE,
- ASK_END_TIME_PATH_END_DATE, ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE, 
- ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION, 
+ ASK_END_TIME_PATH_END_DATE, ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE,
+ ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
  PROCESS_EVENT, ROUTE_SAME_EVENT) = range(15)
 TOKEN = chatbot_token
 
@@ -56,7 +56,7 @@ def ask_event_type(update, context) -> int:
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ASK_EVENT_TYPE
-    
+
 
 def ask_start_date(update, context) -> int:
     """Stores event type and ask start date."""
@@ -142,7 +142,7 @@ def ask_end_time_path_no_end_date(update, content) -> int:
     """If the user wants to add end time, the bot asks the end time."""
     update.message.reply_text(text.ask_end_time)
     return ASK_CATEGORY_PATH_END_TIME
-    
+
 
 def ask_category_path_end_time(update, context) -> int:
     """Stores end time and asks event category."""
@@ -156,7 +156,7 @@ def ask_category_path_end_time(update, context) -> int:
 
 
 def ask_category_path_no_end_time(update, context) -> int:
-    """If the users chooses not to add end time, 
+    """If the users chooses not to add end time,
     the bot asks event category."""
     update.message.reply_text(text.ask_category, reply_markup=K.category)
     return ASK_DESCRIPTION
@@ -253,7 +253,7 @@ def process_submitted_event(update, context) -> int:
         event.id = insert_event(event)
         file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
         file_locandina.download(f'locandine/{event.id}.jpg')
-    
+
         if username is not None:
             telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
         else:
