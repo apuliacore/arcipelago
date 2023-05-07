@@ -171,5 +171,5 @@ def test_process_submitted_event():
 	mock_message = MockMessage(user=mock_user)
 	mock_update = MockUpdate(mock_message)
 	mock_context = MockContext(get_dummy_event())
-	mock_context.locandina = 0
+	mock_context.locandina = 'AgACAgQAAxkBAAEgwflkV6NF2iUwX8C7_WrlsE-7J7-CWgACtb0xGwqlWFJm1tWjgZ9EQgEAAwIAA3MAAy8E'
 	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
