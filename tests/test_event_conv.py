@@ -166,14 +166,15 @@ def test_ask_confirm_submission():
 @pytest.mark.skipif(chatbot_token == "0", reason="Local configuration.")
 def test_process_submitted_event():
 	# authorized user
-	mock_user = MockUser()
-	mock_user.id = list(authorized_users.keys())[0]
-	mock_message = MockMessage(user=mock_user)
+	authorized_user = MockUser()
+	authorized_user.id = list(authorized_users.keys())[0]
+	mock_message = MockMessage(user=authorized_user)
 	mock_update = MockUpdate(mock_message)
 	mock_context = MockContext(get_dummy_event())
 	mock_context.user_data['locandina'] = 'AgACAgQAAxkBAAEgwjZkV6zRdksaF-b0hn8C8eGlhud1GgACGLsxG9f-wFKIXnZJofu37QEAAwIAA3MAAy8E'
 	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
 
 	# unauthorized user
-	mock_update.message.from_user.id += 1
+	unauthorized_user = MockUser('pluto987', 'Pluto', 123456)
+	mock_update.message.from_user = unauthorized_user
 	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
