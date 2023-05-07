@@ -7,7 +7,7 @@ import datetime
 
 def test_start_date_setter():
 	event = Event()
-	
+
 	# wrong format
 	try:
 		event.start_date = '13/12/2022'
@@ -138,7 +138,7 @@ def test_publication_date_setter():
 		event.publication_date = '13/12/2022'
 	except Exception as e:
 		assert 'gg.mm.aaaa' in str(e)
-	
+
 	# past date
 	try:
 		event.publication_date = (datetime.datetime.now().date() - datetime.timedelta(days=1)).strftime('%d.%m.%Y')

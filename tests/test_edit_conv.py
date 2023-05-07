@@ -18,7 +18,7 @@ def test_edit():
 	assert edit(update, context) == ConversationHandler.END
 
 	event = Event().load_from_res(get_event_from_id(1)[0])  # festa di fine estate
-	update = MockUpdate(MockMessage(text='/modifica ' + event.hash()))  
+	update = MockUpdate(MockMessage(text='/modifica ' + event.hash()))
 	assert edit(update, context) == EDIT2
 
 
@@ -36,7 +36,7 @@ def test_edit_field():
 def test_confirm_edit_field():
 	event = arcipelago.event.Event()
 	event.load_from_res(arcipelago.db.get_event_from_id(3)[0])
-	
+
 	update = MockUpdate(MockMessage('PhEST 2022 | Opening Days'))
 	context = MockContext()
 	context.user_data['field_to_edit'] = 'Nome'

@@ -33,7 +33,7 @@ def add_event_to_gcalendar(event):
            } if event.end_datetime is not None else
            {
                'dateTime': (event.start_datetime + datetime.timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:00+01:00"),
-               'timeZone': 'Europe/Rome',            
+               'timeZone': 'Europe/Rome',
            }}
 
       # post event and get URL
