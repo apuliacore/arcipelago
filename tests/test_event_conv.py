@@ -171,5 +171,5 @@ def test_process_submitted_event():
 	mock_message = MockMessage(user=mock_user)
 	mock_update = MockUpdate(mock_message)
 	mock_context = MockContext(get_dummy_event())
-	mock_context.user_data['locandina'] = 'https://upload.wikimedia.org/wikipedia/commons/d/da/Dandelions_close_up.jpg'
+	mock_context.user_data['locandina'] = open('locandine/1.jpg', 'rb')
 	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
