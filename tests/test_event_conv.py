@@ -175,5 +175,5 @@ def test_process_submitted_event():
 	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
 
 	# unauthorized user
-	mock_update.mock_message.from_user.id += 1
+	mock_update.message.from_user.id += 1
 	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
