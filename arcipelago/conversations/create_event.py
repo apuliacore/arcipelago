@@ -47,6 +47,7 @@ def ask_event_venue(update, context) -> int:
         update.message.reply_text(str(e))
         return ASK_VENUE
 
+
 def ask_event_type(update, context) -> int:
     """Stores event venue and asks event type."""
     try:
@@ -72,6 +73,7 @@ def ask_start_date(update, context) -> int:
         except BadEventAttrError as e:
             update.message.reply_text(str(e))
             return ASK_START_DATE
+
 
 def ask_start_time(update, context) -> int:
     """Stores start date and asks start time."""
