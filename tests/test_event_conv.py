@@ -1,17 +1,17 @@
 import pytest
 import datetime
 from telegram.ext import ConversationHandler
-from mockups import MockUpdate, MockMessage, MockContext
+from mockups import MockUpdate, MockMessage, MockContext, MockUser
 from test_db import get_dummy_event
 from arcipelago.event import Event
 from arcipelago.conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date,
-	ask_description, ask_publication_date, ask_confirm_submission)
+	ask_description, ask_publication_date, ask_confirm_submission, process_submitted_event)
 from arcipelago.conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE,
 	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
 	ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
 	PROCESS_EVENT)
-from arcipelago.config import SERVICE_ACCOUNT_FILE
+from arcipelago.config import SERVICE_ACCOUNT_FILE, authorized_users
 
 
 def test_ask_poster():
@@ -165,4 +165,11 @@ def test_ask_confirm_submission():
 
 @pytest.mark.skipif(SERVICE_ACCOUNT_FILE == "", reason="Local configuration.")
 def test_process_submitted_event():
-	pass
+	# authorized user
+	mock_user = MockUser()
+	mock_user.id = list(authorized_users.keys())[0]
+	mock_message = MockMessage(user=mock_user)
+	mock_update = MockUpdate(mock_message)
+	mock_context = MockContext(get_dummy_event())
+	mock_context.locandina = 0
+	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
