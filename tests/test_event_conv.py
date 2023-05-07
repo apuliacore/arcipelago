@@ -11,7 +11,7 @@ from arcipelago.conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_EVEN
 	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
 	ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
 	PROCESS_EVENT)
-from arcipelago.config import SERVICE_ACCOUNT_FILE, authorized_users
+from arcipelago.config import chatbot_token, authorized_users
 
 
 def test_ask_poster():
@@ -163,7 +163,7 @@ def test_ask_confirm_submission():
 	assert ask_confirm_submission(update, context) == PROCESS_EVENT
 
 
-@pytest.mark.skipif(SERVICE_ACCOUNT_FILE == "", reason="Local configuration.")
+@pytest.mark.skipif(chatbot_token == "0", reason="Local configuration.")
 def test_process_submitted_event():
 	# authorized user
 	mock_user = MockUser()
