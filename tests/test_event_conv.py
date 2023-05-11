@@ -133,8 +133,17 @@ def test_ask_category_path_end_time():
 	dummy_event.event_type = 'Evento singolo'
 	dummy_event.start_datetime = datetime.datetime.now()
 
-	# wrong event duration
+	# wrong format
 	update = MockUpdate(MockMessage('2 ore'))
+	context = MockContext(dummy_event)
+	assert ask_category_path_end_time(update, context) == ASK_CATEGORY_PATH_END_TIME
+
+	# wrong event duration
+	update = MockUpdate(MockMessage('-1'))
+	context = MockContext(dummy_event)
+	assert ask_category_path_end_time(update, context) == ASK_CATEGORY_PATH_END_TIME
+
+	update = MockUpdate(MockMessage('50'))
 	context = MockContext(dummy_event)
 	assert ask_category_path_end_time(update, context) == ASK_CATEGORY_PATH_END_TIME
 

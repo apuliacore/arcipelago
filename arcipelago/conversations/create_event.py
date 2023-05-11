@@ -158,8 +158,13 @@ def ask_category_path_end_time(update, context) -> int:
         except ValueError:
             update.message.reply_text("Formato non valido, invia un singolo numero:")
             return ASK_CATEGORY_PATH_END_TIME
-        context.user_data['event'].set_duration(event_duration)
-        return ASK_DESCRIPTION
+        try:
+            context.user_data['event'].set_duration(event_duration)
+            update.message.reply_text(text.ask_category, reply_markup=K.category)
+            return ASK_DESCRIPTION
+        except BadEventAttrError as e:
+            update.message.reply_text(str(e))
+            return ASK_CATEGORY_PATH_END_TIME
     else:
         try:
             context.user_data['event'].end_time = update.message.text

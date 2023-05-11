@@ -400,4 +400,9 @@ class Event(object):
 
     def set_duration(self, duration: int):
         assert self.start_datetime is not None
-        self.end_datetime = self.start_datetime + datetime.timedelta(hours=duration)
+        if duration < 1:
+            raise BadEventAttrError("La durata minima per un evento è un'ora.")
+        elif duration > 24:
+            raise BadEventAttrError("La durata massima per un evento è 24 ore.")
+        else:
+            self.end_datetime = self.start_datetime + datetime.timedelta(hours=duration)
