@@ -31,15 +31,16 @@ def test_get_next_hour_datetime():
 def test_check_event_will_get_published():
 	event = Event()
 	date_today = datetime.datetime.now().date()
-	event.start_date = date_today + datetime.timedelta(days=1)
+	event.start_date = date_today + datetime.timedelta(days=1)  # event is tomorrow
 
-	# event is not today
+	# event is not published today
+	event.publication_date = date_today + datetime.timedelta(days=1)
 	assert check_event_will_get_published(event) == True
 
-	event.start_date = date_today
+	# event is published today
+	event.publication_date = date_today
 	time_now = datetime.datetime.now().time()
-
-	if time_now > datetime.time(13):
+	if time_now > datetime.time(10):
 		assert check_event_will_get_published(event) == False
 	else:
 		assert check_event_will_get_published(event) == True

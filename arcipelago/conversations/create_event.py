@@ -47,6 +47,7 @@ def ask_event_venue(update, context) -> int:
         update.message.reply_text(str(e))
         return ASK_VENUE
 
+
 def ask_event_type(update, context) -> int:
     """Stores event venue and asks event type."""
     try:
@@ -73,6 +74,7 @@ def ask_start_date(update, context) -> int:
             update.message.reply_text(str(e))
             return ASK_START_DATE
 
+
 def ask_start_time(update, context) -> int:
     """Stores start date and asks start time."""
     try:
@@ -96,8 +98,12 @@ def ask_add_end_date(update, context) -> int:
             update.message.reply_text(text.ask_same_event, reply_markup=K.yes_or_no)
             return ROUTE_SAME_EVENT
         else:
-            update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
-            return ASK_END_DATE
+            if context.user_data['event'].event_type == 'Evento singolo':
+                update.message.reply_text(text.ask_event_duration)
+                return ASK_CATEGORY_PATH_END_TIME
+            else:
+                update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
+                return ASK_END_DATE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ASK_ADD_END_DATE
@@ -146,13 +152,27 @@ def ask_end_time_path_no_end_date(update, content) -> int:
 
 def ask_category_path_end_time(update, context) -> int:
     """Stores end time and asks event category."""
-    try:
-        context.user_data['event'].end_time = update.message.text
-        update.message.reply_text(text.ask_category, reply_markup=K.category)
-        return ASK_DESCRIPTION
-    except BadEventAttrError as e:
-        update.message.reply_text(str(e))
-        return ASK_CATEGORY_PATH_END_TIME
+    if context.user_data['event'].event_type == 'Evento singolo':
+        try:
+            event_duration = int(update.message.text.strip())
+        except ValueError:
+            update.message.reply_text("Formato non valido, invia un singolo numero:")
+            return ASK_CATEGORY_PATH_END_TIME
+        try:
+            context.user_data['event'].set_duration(event_duration)
+            update.message.reply_text(text.ask_category, reply_markup=K.category)
+            return ASK_DESCRIPTION
+        except BadEventAttrError as e:
+            update.message.reply_text(str(e))
+            return ASK_CATEGORY_PATH_END_TIME
+    else:
+        try:
+            context.user_data['event'].end_time = update.message.text
+            update.message.reply_text(text.ask_category, reply_markup=K.category)
+            return ASK_DESCRIPTION
+        except BadEventAttrError as e:
+            update.message.reply_text(str(e))
+            return ASK_CATEGORY_PATH_END_TIME
 
 
 def ask_category_path_no_end_time(update, context) -> int:

@@ -125,7 +125,7 @@ class Event(object):
 
     @property
     def event_type(self):
-        return self._type
+        return self._event_type
 
     @id.setter
     def id(self, value):
@@ -397,3 +397,12 @@ class Event(object):
 
     def get_str_repr(self):
         return self.name.strip().lower() + self.venue.strip().lower() + self.start_datetime.strftime("%d.%m.%Y-%H:%M")
+
+    def set_duration(self, duration: int):
+        assert self.start_datetime is not None
+        if duration < 1:
+            raise BadEventAttrError("La durata minima per un evento è un'ora.")
+        elif duration > 24:
+            raise BadEventAttrError("La durata massima per un evento è 24 ore.")
+        else:
+            self.end_datetime = self.start_datetime + datetime.timedelta(hours=duration)
