@@ -5,8 +5,8 @@ from mockups import MockUpdate, MockMessage, MockContext, MockUser
 from test_db import get_dummy_event
 from arcipelago.event import Event
 from arcipelago.conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
-	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date,
-	ask_description, ask_publication_date, ask_confirm_submission, process_submitted_event)
+	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, ask_end_time_path_end_date, ask_category_path_end_time,
+	ask_description,  ask_publication_date, ask_confirm_submission, process_submitted_event)
 from arcipelago.conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE,
 	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
 	ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
@@ -75,6 +75,7 @@ def test_ask_add_end_date():
 	# colliding event
 	# TODO: add test
 
+	# Rassegna o esposizione
 	now_plus_1h = (datetime.datetime.now() + datetime.timedelta(hours=1))
 	start_time = now_plus_1h.time().strftime('%H:%M')
 	update = MockUpdate(MockMessage(start_time))
@@ -82,6 +83,14 @@ def test_ask_add_end_date():
 	dummy_event.start_date = now_plus_1h.date()
 	context = MockContext(dummy_event)
 	assert ask_add_end_date(update, context) == ASK_END_DATE
+
+	# Evento singolo
+	dummy_event = Event()
+	dummy_event.start_date = now_plus_1h.date()
+	dummy_event.event_type = 'Evento singolo'
+	context = MockContext(dummy_event)
+	update = MockUpdate(MockMessage(start_time))
+	assert ask_add_end_date(update, context) == ASK_CATEGORY_PATH_END_TIME
 
 
 def test_route_same_event():
@@ -116,6 +125,44 @@ def test_ask_end_time_path_end_date():
 	now_date = datetime.datetime.now().date().strftime('%d.%m.%Y')
 	update = MockUpdate(MockMessage(now_date))
 	assert ask_end_time_path_end_date(update, context) == ASK_CATEGORY_PATH_END_TIME
+
+
+def test_ask_category_path_end_time():
+	# Evento singolo
+	dummy_event = Event()
+	dummy_event.event_type = 'Evento singolo'
+	dummy_event.start_datetime = datetime.datetime.now()
+
+	# wrong event duration
+	update = MockUpdate(MockMessage('2 ore'))
+	context = MockContext(dummy_event)
+	assert ask_category_path_end_time(update, context) == ASK_CATEGORY_PATH_END_TIME
+
+	# right event duration
+	update = MockUpdate(MockMessage('2'))
+	context = MockContext(dummy_event)
+	assert ask_category_path_end_time(update, context) == ASK_DESCRIPTION
+
+	# Rassegna o esposizione
+	# wrong format
+	update = MockUpdate(MockMessage('aaa'))
+	context = MockContext()
+	assert ask_category_path_end_time(update, context) == ASK_CATEGORY_PATH_END_TIME
+
+	# wrong values
+	dummy_event = Event()
+	now_datetime = datetime.datetime.now()
+	dummy_event.start_datetime = now_datetime
+	wrong_time = (now_datetime - datetime.timedelta(hours=1)).time()
+	update = MockUpdate(MockMessage(wrong_time.strftime('%H:%M')))
+	context = MockContext(dummy_event)
+	assert ask_category_path_end_time(update, context) == ASK_CATEGORY_PATH_END_TIME
+
+	# correct
+	right_time = (now_datetime + datetime.timedelta(hours=1)).time()
+	update = MockUpdate(MockMessage(right_time.strftime('%H:%M')))
+	context = MockContext(dummy_event)
+	assert ask_category_path_end_time(update, context) == ASK_DESCRIPTION
 
 
 def test_ask_description():
