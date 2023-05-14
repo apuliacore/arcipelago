@@ -235,7 +235,4 @@ def test_process_submitted_event():
 	# unauthorized user
 	unauthorized_user = MockUser('pluto987', 'Pluto', 123456)
 	mock_update.message.from_user = unauthorized_user
-	try:
-		process_submitted_event(mock_update, mock_context)
-	except FileNotFoundError as err:
-		assert 'locandine' in str(err)
+	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
