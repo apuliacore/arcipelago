@@ -2,7 +2,7 @@
 development = True
 
 # Telegram
-chatbot_token = '0'
+chatbot_token = ''
 main_channel = 0
 notification_channel = 0
 main_group = 0

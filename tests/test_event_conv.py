@@ -219,7 +219,7 @@ def test_ask_confirm_submission():
 	assert ask_confirm_submission(update, context) == PROCESS_EVENT
 
 
-@pytest.mark.skipif(chatbot_token == "0", reason="Local configuration.")
+@pytest.mark.skipif(not chatbot_token, reason="Local configuration.")
 def test_process_submitted_event():
 	# authorized user
 	authorized_user = MockUser()

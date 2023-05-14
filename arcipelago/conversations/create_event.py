@@ -18,7 +18,10 @@ from arcipelago.conversations import keyboards as K
  ASK_END_TIME_PATH_END_DATE, ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE,
  ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
  PROCESS_EVENT, ROUTE_SAME_EVENT) = range(15)
-TOKEN = chatbot_token
+
+
+if chatbot_token:
+    bot = telegram.Bot(token=chatbot_token)
 
 
 def ask_poster(update, context) -> int:
@@ -225,9 +228,9 @@ def ask_confirm_submission(update, context) -> int:
     except telegram.error.BadRequest:
         update.message.reply_text(text.send_event_failure)
         if username is not None:
-            telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"{first_name} (@{username}) ha provato ad inviare un evento ma si è verificato un errore")
+            bot.sendMessage(chat_id=notification_channel, text=f"{first_name} (@{username}) ha provato ad inviare un evento ma si è verificato un errore")
         else:
-            telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"{first_name} ha provato ad inviare un evento ma si è verificato un errore")
+            bot.sendMessage(chat_id=notification_channel, text=f"{first_name} ha provato ad inviare un evento ma si è verificato un errore")
         print(traceback.format_exc())
         return ConversationHandler.END
 
@@ -243,43 +246,43 @@ def process_submitted_event(update, context) -> int:
 
     if user_id in authorized_users:
         event.confirmed = True
-        telegram.Bot(token=TOKEN).send_photo(
+        bot.send_photo(
                 chat_id=notification_channel,
                 photo=context.user_data['locandina'],
                 caption=event.html(),
                 parse_mode=telegram.ParseMode.HTML
             )
         if username is not None:
-            telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
+            bot.sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
         else:
-            telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
+            bot.sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
+        bot.sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
         event.id = insert_event(event)
-        file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
+        file_locandina = bot.get_file(context.user_data['locandina'])
         file_locandina.download(f'locandine/{event.id}.jpg')
         update.message.reply_text(text.ack_event_accepted_admin)
         update.message.reply_text(f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
             "Puoi usarlo con il comando /modifica per cambiare alcune informazioni sull'evento prima della pubblicazione.",
             parse_mode=telegram.ParseMode.HTML)
         if check_event_will_get_published(event) == False:
-            publish_event(telegram.Bot(token=TOKEN), event)
+            publish_event(bot, event)
     else:
-        telegram.Bot(token=TOKEN).send_photo(
+        bot.send_photo(
                 chat_id=notification_channel,
                 photo=context.user_data['locandina'],
                 caption=event.html(),
                 parse_mode=telegram.ParseMode.HTML
             )
         event.id = insert_event(event)
-        file_locandina = telegram.Bot(token=TOKEN).get_file(context.user_data['locandina'])
+        file_locandina = bot.get_file(context.user_data['locandina'])
         file_locandina.download(f'locandine/{event.id}.jpg')
 
         if username is not None:
-            telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
+            bot.sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name} (@{username}).")
         else:
-            telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=notification_channel, text=text.ask_confirm_publish_event,
+            bot.sendMessage(chat_id=notification_channel, text=f"Inviato da {first_name}.")
+        bot.sendMessage(chat_id=notification_channel, text=f"L'evento sarà pubblicato il {event.publication_date.strftime('%d.%m.%Y')}.")
+        bot.sendMessage(chat_id=notification_channel, text=text.ask_confirm_publish_event,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Sì', callback_data=f"{user_id} {event.id} 1"),
                                                 InlineKeyboardButton(text='No', callback_data=f"{user_id} {event.id} 0")]]))
         update.message.reply_text(text.ack_event_submitted)
@@ -331,15 +334,15 @@ def set_event_confirmation(update, context) -> None:
         set_confirmed(event_id)
         event = Event().load_from_res(get_event_from_id(event_id)[0])
         update.callback_query.edit_message_text(text=f"Evento confermato da {admin.first_name} (@{admin.username}).")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id, text=text.ack_event_accepted_user)
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id, text=f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
+        bot.sendMessage(chat_id=user_id, text=text.ack_event_accepted_user)
+        bot.sendMessage(chat_id=user_id, text=f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
             "Puoi usarlo con il comando /modifica per cambiare alcune informazioni sull'evento prima della pubblicazione.",
             parse_mode=telegram.ParseMode.HTML)
         if check_event_will_get_published(event) == False:
-            publish_event(telegram.Bot(token=TOKEN), event)
+            publish_event(bot, event)
     else:
         update.callback_query.edit_message_text(text=f"Evento non confermato da {admin.first_name} (@{admin.username}).")
-        telegram.Bot(token=TOKEN).sendMessage(chat_id=user_id, text=text.ack_event_not_accepted)
+        bot.sendMessage(chat_id=user_id, text=text.ack_event_not_accepted)
 
 
 callback_query_handler = CallbackQueryHandler(set_event_confirmation)
