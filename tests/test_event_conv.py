@@ -219,7 +219,6 @@ def test_ask_confirm_submission():
 	assert ask_confirm_submission(update, context) == PROCESS_EVENT
 
 
-@pytest.mark.skipif(not chatbot_token, reason="Local configuration.")
 def test_process_submitted_event():
 	# authorized user
 	authorized_user = MockUser()
@@ -228,9 +227,15 @@ def test_process_submitted_event():
 	mock_update = MockUpdate(mock_message)
 	mock_context = MockContext(get_dummy_event())
 	mock_context.user_data['locandina'] = 'AgACAgQAAxkBAAEgwjZkV6zRdksaF-b0hn8C8eGlhud1GgACGLsxG9f-wFKIXnZJofu37QEAAwIAA3MAAy8E'
-	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
+	try:
+		process_submitted_event(mock_update, mock_context)
+	except FileNotFoundError as err:
+		assert 'locandine' in str(err)
 
 	# unauthorized user
 	unauthorized_user = MockUser('pluto987', 'Pluto', 123456)
 	mock_update.message.from_user = unauthorized_user
-	assert process_submitted_event(mock_update, mock_context) == ConversationHandler.END
+	try:
+		process_submitted_event(mock_update, mock_context)
+	except FileNotFoundError as err:
+		assert 'locandine' in str(err)

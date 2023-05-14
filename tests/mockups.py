@@ -39,6 +39,14 @@ class MockContext:
 		self.user_data['locandina'] = None
 
 
+class MockFile:
+	def __init__(self):
+		pass
+
+	def download(self, path):
+		print(f'downloading {path}')
+
+
 class MockBot:
 	def __init__(self, token):
 		pass
@@ -54,3 +62,4 @@ class MockBot:
 
 	def get_file(self, file_id):
 		print(f"getting file {file_id}")
+		return MockFile()
