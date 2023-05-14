@@ -12,6 +12,7 @@ from arcipelago.event import category2emoji, Event, check_events_collision, BadE
 from arcipelago.notification import check_event_will_get_published, publish_event
 from arcipelago.conversations import text
 from arcipelago.conversations import keyboards as K
+from tests.mockups import MockBot
 
 
 (ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE,
@@ -22,6 +23,8 @@ from arcipelago.conversations import keyboards as K
 
 if chatbot_token:
     bot = telegram.Bot(token=chatbot_token)
+else:
+    bot = MockBot(token=chatbot_token)
 
 
 def ask_poster(update, context) -> int:
