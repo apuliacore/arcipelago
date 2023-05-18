@@ -1,6 +1,5 @@
 __pycache__/
 .coverage
-dummy.sql
 staging_config.py
 empty_config.py
 *.db
