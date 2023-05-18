@@ -1,5 +1,10 @@
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
+try:
+   from google.oauth2 import service_account
+   from googleapiclient.discovery import build
+except ImportError as err:
+   print("Caught exception:", str(err))
+   print("Google libraries are probably not installed.")
+   print("If you want to use Google Calendar, install the project like so: poetry install --with gcalendar.")
 import os
 import datetime
 from arcipelago.config import SERVICE_ACCOUNT_FILE, CALENDAR_ID
