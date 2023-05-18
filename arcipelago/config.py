@@ -1,5 +1,5 @@
 # Installation
-development = True
+development = False
 
 # Telegram
 chatbot_token = ''
