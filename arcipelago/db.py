@@ -34,6 +34,7 @@ def import_db():
 	from arcipelago.event import Event, BadEventAttrError
 
 	path_db_file = input("Enter path to db file:")
+	print('Loading events from db: {path_db_file}')
 	events = read_events(path_db_file)
 
 	for event in events:
@@ -41,6 +42,7 @@ def import_db():
 			insert_event(Event().load_from_res(event))
 		except BadEventAttrError:
 			print(f'Could not load event {event[0]} {event[1]}')
+	print('Done.')
 
 
 def read_events(db_name):
