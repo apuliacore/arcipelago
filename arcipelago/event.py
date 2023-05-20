@@ -264,6 +264,12 @@ class Event(object):
                     if not self.start_time < time_input:
                         raise BadEventAttrError("L'orario che hai inserito è precedente a quello di inzio evento! Inserisci un orario valido:")
                     self._end_time = time_input
+                elif self.event_type == 'Esposizione':
+                    time_input = datetime.time(hour=hh, minute=mm)
+                    virtual_end_datetime = datetime.datetime.combine(self.start_date, time_input)
+                    if virtual_end_datetime < self.start_datetime:
+                        raise BadEventAttrError("L'orario di chiusura dell'esposizione è predecedente all'orario di apertura. Inserisci degli orari validi:")
+                    self._end_time = time_input
                 else:
                     time_input = datetime.time(hour=hh, minute=mm)
                     self._end_time = time_input
@@ -345,13 +351,18 @@ class Event(object):
 
     def html(self, short=False):
         start_datetime = self.start_datetime.strftime('%d.%m.%Y | %H:%M')
+        start_date = self.start_datetime.strftime('%d.%m.%Y')
         start_time = self.start_datetime.strftime('%H:%M')
 
         if self.end_datetime is not None:
             if self.start_date == self.end_date:  # end same day different hour
+                end_date = start_date
                 end_datetime = self.end_time.strftime('%H:%M')
+                end_time = end_datetime
             else:
+                end_date = self.end_datetime.strftime('%d.%m.%Y')
                 end_datetime = self.end_datetime.strftime('%d.%m.%Y | %H:%M')
+                end_time = self.end_datetime.strftime('%H:%M')
 
         venue = self.venue
         description = html.escape(self.description)
@@ -364,6 +375,13 @@ class Event(object):
                 res_html +=  f" - {end_datetime}"
             res_html += f"""\n📍{venue}\n"""
             res_html += f"""<code>{name}</code>"""
+
+        elif self.event_type == 'Esposizione':
+            res_html = f"<code>{name}</code>\n"
+            res_html += f"📅{start_date} - {end_date}"
+            res_html += f"\n🕒{start_time} - {end_time}"
+            res_html += f"""\n📍{venue}\n\n"""
+            res_html += f"""{description}"""
 
         else:
             res_html = f"<code>{name}</code>\n"

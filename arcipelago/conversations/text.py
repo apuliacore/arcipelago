@@ -1,5 +1,5 @@
 # main
-welcome = "Ciao! Sono il bot di @apuliacore, invia /evento per suggerire un nuovo evento o /oggi per conoscere gli eventi di oggi."
+welcome = "Ciao, sono il bot di @apuliacore!\n\nInvia /evento per suggerire un nuovo evento o /oggi per conoscere gli eventi di oggi."
 no_event = "Sembra che non ci siano eventi registrati per oggi. Se vuoi puoi suggerirne uno con /evento."
 ack_canceled_op = "Ok, operazione annullata."
 
@@ -19,6 +19,7 @@ ack_same_event = "Ok allora, grazie lo stesso!"
 ask_end_date = "Inserisci la data di fine evento: [formato gg.mm.aaaa]"
 ask_add_end_time = "Vuoi inserire l'orario di fine evento?"
 ask_end_time = "A che ora finisce l'evento? [formato hh:mm]"
+ask_opening_hours = "Inserisci gli orari di apertura dell'esposizione: [formato hh:mm - hh:mm]"
 ask_category = "Scegli una categoria per l'evento:"
 help_category = "La categoria che hai scelto non è tra quelle previste. Usa la tastiera preimpostata:"
 ask_description = "Inserisci le info utili per l'evento (come link per acquistare biglietti, programmi, line-up, etc):"

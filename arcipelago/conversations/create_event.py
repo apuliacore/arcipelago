@@ -17,8 +17,9 @@ from tests.mockups import MockBot
 
 (ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE,
  ASK_END_TIME_PATH_END_DATE, ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE,
+ STORE_END_DATE, STORE_OPENING_HOURS,
  ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
- PROCESS_EVENT, ROUTE_SAME_EVENT) = range(15)
+ PROCESS_EVENT, ROUTE_SAME_EVENT) = range(17)
 
 
 if chatbot_token:
@@ -85,12 +86,15 @@ def ask_start_time(update, context) -> int:
     """Stores start date and asks start time."""
     try:
         context.user_data['event'].start_date = update.message.text
-        update.message.reply_text(text.ask_start_time)
-        return ASK_ADD_END_DATE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ASK_START_TIME
-
+    if context.user_data['event'].event_type == 'Evento singolo':
+        update.message.reply_text(text.ask_start_time)
+        return ASK_ADD_END_DATE
+    elif context.user_data['event'].event_type == 'Esposizione':
+        update.message.reply_text(text.ask_end_date)
+        return STORE_END_DATE
 
 def ask_add_end_date(update, context) -> int:
     """Stores start time, checks if there is already a similar event,
@@ -122,14 +126,57 @@ def route_same_event(update, context) -> int:
         update.message.reply_text(text.ack_same_event)
         return ConversationHandler.END
     elif user_input == 'no':
-        update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
-        return ASK_END_DATE
+        if context.user_data['event'].event_type == 'Evento singolo':
+            update.message.reply_text(text.ask_add_end_date, reply_markup=K.yes_or_no)
+            return ASK_END_DATE
+        elif context.user_data['event'].event_type == 'Esposizione':
+            update.message.reply_text(text.ask_category, reply_markup=K.category)
+            return ASK_DESCRIPTION
 
 
 def ask_end_date(update, context) -> int:
     """Asks for ending date."""
     update.message.reply_text(text.ask_end_date)
     return ASK_END_TIME_PATH_END_DATE
+
+
+def store_end_date(update, context) -> int:
+    try:
+        context.user_data['event'].end_date = update.message.text
+    except BadEventAttrError as e:
+        update.message.reply_text(str(e))
+        return STORE_END_DATE
+    if context.user_data['event'].event_type == 'Esposizione':
+        update.message.reply_text(text.ask_opening_hours)
+        return STORE_OPENING_HOURS
+
+
+def store_opening_hours(update, context) -> int:
+    """Stores opening hours for an exposition."""
+    if '-' in update.message.text:
+        opening_time, closing_time = update.message.text.split('-')
+        opening_time, closing_time = opening_time.strip(), closing_time.strip()
+        try:
+            context.user_data['event'].start_time = opening_time
+            context.user_data['event'].end_time = closing_time
+        except BadEventAttrError as e:
+            update.message.reply_text(str(e))
+            update.message.reply_text(text.ask_opening_hours)
+            return STORE_OPENING_HOURS
+
+        colliding_event = check_events_collision(context.user_data['event'])
+        if colliding_event is not None:
+            update.message.reply_text(text.similar_event)
+            update.message.reply_text(colliding_event.html(), parse_mode=telegram.ParseMode.HTML)
+            update.message.reply_text(text.ask_same_event, reply_markup=K.yes_or_no)
+            return ROUTE_SAME_EVENT
+        else:
+            update.message.reply_text(text.ask_category, reply_markup=K.category)
+            return ASK_DESCRIPTION
+    else:
+        update.message.reply_text('Formato non valido.')
+        update.message.reply_text(text.ask_opening_hours)
+        return STORE_OPENING_HOURS
 
 
 def ask_end_time_path_end_date(update, context) -> int:
@@ -310,9 +357,11 @@ event_conv_handler = ConversationHandler(
             ASK_ADD_END_DATE: [MessageHandler(F.text, ask_add_end_date)],
             ASK_END_DATE: [MessageHandler(F.regex("Sì"), ask_end_date),
                         MessageHandler(F.regex("No"), ask_add_end_time)],
+            STORE_END_DATE: [MessageHandler(F.text, store_end_date)],
             ASK_END_TIME_PATH_END_DATE: [MessageHandler(F.text, ask_end_time_path_end_date)],
             ASK_END_TIME_PATH_NO_END_DATE: [MessageHandler(F.regex("Sì"), ask_end_time_path_no_end_date),
                           MessageHandler(F.regex("No"), ask_category_path_no_end_time)],
+            STORE_OPENING_HOURS: [MessageHandler(F.text, store_opening_hours)],
             ASK_CATEGORY_PATH_END_TIME: [MessageHandler(F.text, ask_category_path_end_time)],
             ASK_DESCRIPTION: [MessageHandler(F.text & (~ F.command), ask_description)],
             ASK_PUBLICATION_DATE: [MessageHandler(F.text & (~ F.command), ask_publication_date)],
