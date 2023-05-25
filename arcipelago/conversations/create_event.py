@@ -15,13 +15,13 @@ from arcipelago.conversations import keyboards as K
 from tests.mockups import MockBot
 
 
-(STORE_POSTER, STORE_EVENT_NAME, ASK_EVENT_TYPE, STORE_EVENT_TYPE, STORE_EVENT_VENUE,
+(STORE_POSTER, STORE_EVENT_NAME, STORE_EVENT_TYPE, STORE_EVENT_VENUE,
  ASK_START_DATE, ASK_START_TIME, ASK_END_DATE,
  ASK_END_TIME_PATH_END_DATE, ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE,
  STORE_END_DATE, STORE_OPENING_HOURS, STORE_NUM_EVENTS, STORE_EVENT_VENUES_CALENDAR,
  STORE_START_DATES_CALENDAR, STORE_START_TIMES_CALENDAR, STORE_EVENTS_DURATION_CALENDAR,
  ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
- PROCESS_EVENT, ROUTE_SAME_EVENT) = range(24)
+ PROCESS_EVENT, ROUTE_SAME_EVENT) = range(23)
 
 
 if chatbot_token:
@@ -114,17 +114,6 @@ def store_event_venues_calendar(update, context) -> int:
                 return STORE_EVENT_VENUES_CALENDAR
     update.message.reply_text(text.ask_start_dates_calendar)
     return STORE_START_DATES_CALENDAR
-
-
-def ask_event_type(update, context) -> int:
-    """Stores event venue and asks event type."""
-    try:
-        context.user_data['event'].venue = update.message.text
-        update.message.reply_text(text.ask_event_type, reply_markup=K.event_type)
-        return ASK_START_DATE
-    except BadEventAttrError as e:
-        update.message.reply_text(str(e))
-        return ASK_EVENT_TYPE
 
 
 def ask_start_date(update, context) -> int:
@@ -527,7 +516,6 @@ event_conv_handler = ConversationHandler(
             STORE_EVENT_NAME: [MessageHandler(F.text & (~ F.command), store_event_name)],
             STORE_EVENT_TYPE: [MessageHandler(F.text, store_event_type)],
             STORE_EVENT_VENUE: [MessageHandler(F.text, store_event_venue)],
-            ASK_EVENT_TYPE: [MessageHandler(F.text & (~ F.command), ask_event_type)],
             ASK_START_DATE: [MessageHandler(F.text & (~ F.command), ask_start_date)],
             ASK_START_TIME: [MessageHandler(F.text, ask_start_time)],
             ROUTE_SAME_EVENT: [MessageHandler(F.text, route_same_event)],

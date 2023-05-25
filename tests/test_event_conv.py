@@ -8,7 +8,7 @@ from arcipelago.conversations.create_event import (ask_poster, store_poster, sto
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, store_end_date, store_opening_hours,
 	ask_end_time_path_end_date, ask_category_path_end_time, ask_description,
 	ask_publication_date, ask_confirm_submission, process_submitted_event)
-from arcipelago.conversations.create_event import (STORE_POSTER, STORE_EVENT_NAME, ASK_EVENT_TYPE, STORE_EVENT_TYPE,
+from arcipelago.conversations.create_event import (STORE_POSTER, STORE_EVENT_NAME, STORE_EVENT_TYPE,
 	ASK_START_DATE, ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
 	STORE_END_DATE, STORE_OPENING_HOURS, STORE_NUM_EVENTS, STORE_EVENT_VENUES_CALENDAR, STORE_START_DATES_CALENDAR,
 	STORE_START_TIMES_CALENDAR, STORE_EVENTS_DURATION_CALENDAR, ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION,
