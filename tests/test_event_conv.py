@@ -4,14 +4,15 @@ from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext, MockUser
 from test_db import get_dummy_event
 from arcipelago.event import Event
-from arcipelago.conversations.create_event import (ask_poster, ask_event_name, ask_event_venue, ask_start_date,
+from arcipelago.conversations.create_event import (ask_poster, store_poster, store_event_name, ask_start_date,
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, store_end_date, store_opening_hours,
 	ask_end_time_path_end_date, ask_category_path_end_time, ask_description,
 	ask_publication_date, ask_confirm_submission, process_submitted_event)
-from arcipelago.conversations.create_event import (ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE,
-	ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE, STORE_END_DATE,
-	STORE_OPENING_HOURS, ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
-	PROCESS_EVENT)
+from arcipelago.conversations.create_event import (STORE_POSTER, STORE_EVENT_NAME, ASK_EVENT_TYPE, STORE_EVENT_TYPE,
+	ASK_START_DATE, ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
+	STORE_END_DATE, STORE_OPENING_HOURS, STORE_NUM_EVENTS, STORE_EVENT_VENUES_CALENDAR, STORE_START_DATES_CALENDAR,
+	STORE_START_TIMES_CALENDAR, STORE_EVENTS_DURATION_CALENDAR, ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION,
+	ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT)
 from arcipelago.config import chatbot_token, authorized_users
 
 
@@ -20,19 +21,19 @@ def test_ask_poster():
 	# is sent to the bot. There's no special edge-case to test
 	update = MockUpdate(MockMessage())
 	context = MockContext()
-	assert ask_poster(update, context) == ASK_NAME
+	assert ask_poster(update, context) == STORE_POSTER
 
 
-def test_ask_event_name():
+def test_store_poster():
 	update = MockUpdate(MockMessage())
 	context = MockContext()
-	assert ask_event_name(update, context) == ASK_VENUE
+	assert store_poster(update, context) == STORE_EVENT_NAME
 
 
-def test_ask_event_venue():
+def test_store_event_name():
 	update = MockUpdate(MockMessage('nome evento'))
 	context = MockContext()
-	assert ask_event_venue(update, context) == ASK_EVENT_TYPE
+	assert store_event_name(update, context) == STORE_EVENT_TYPE
 
 
 def test_ask_start_date():

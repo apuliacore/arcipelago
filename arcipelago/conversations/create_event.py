@@ -15,11 +15,13 @@ from arcipelago.conversations import keyboards as K
 from tests.mockups import MockBot
 
 
-(ASK_NAME, ASK_VENUE, ASK_EVENT_TYPE, ASK_START_DATE, ASK_START_TIME, ASK_END_DATE,
+(STORE_POSTER, STORE_EVENT_NAME, ASK_EVENT_TYPE, STORE_EVENT_TYPE, STORE_EVENT_VENUE,
+ ASK_START_DATE, ASK_START_TIME, ASK_END_DATE,
  ASK_END_TIME_PATH_END_DATE, ASK_ADD_END_DATE, ASK_END_TIME_PATH_NO_END_DATE,
- STORE_END_DATE, STORE_OPENING_HOURS,
+ STORE_END_DATE, STORE_OPENING_HOURS, STORE_NUM_EVENTS, STORE_EVENT_VENUES_CALENDAR,
+ STORE_START_DATES_CALENDAR, STORE_START_TIMES_CALENDAR, STORE_EVENTS_DURATION_CALENDAR,
  ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION, ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION,
- PROCESS_EVENT, ROUTE_SAME_EVENT) = range(17)
+ PROCESS_EVENT, ROUTE_SAME_EVENT) = range(24)
 
 
 if chatbot_token:
@@ -33,26 +35,85 @@ def ask_poster(update, context) -> int:
     update.message.reply_text(text.poster)
     context.user_data['event'] = Event()
     context.user_data['event'].from_chat = update.message.from_user.id
-    return ASK_NAME
+    return STORE_POSTER
 
 
-def ask_event_name(update, context) -> int:
+def store_poster(update, context) -> int:
     """Stores the photo and asks event name."""
     photo_file = update.message.photo[-1].file_id
     context.user_data['locandina'] = photo_file
     update.message.reply_text(text.ask_event_name)
-    return ASK_VENUE
+    return STORE_EVENT_NAME
 
 
-def ask_event_venue(update, context) -> int:
-    """Stores event name and asks event venue."""
+def store_event_name(update, context) -> int:
+    """Stores event name and asks event type."""
     try:
         context.user_data['event'].name = update.message.text
-        update.message.reply_text(text.ask_venue_name)
-        return ASK_EVENT_TYPE
+        update.message.reply_text(text.ask_event_type, reply_markup=K.event_type)
+        return STORE_EVENT_TYPE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return ASK_VENUE
+        return STORE_EVENT_NAME
+
+
+def store_event_venue(update, context) -> int:
+    """Stores event venue and asks start date."""
+    try:
+        context.user_data['event'].venue = update.message.text
+    except BadEventAttrError as e:
+        update.message.reply_text(str(e))
+        return STORE_EVENT_VENUE
+    update.message.reply_text(text.ask_start_date)
+    return ASK_START_TIME
+
+
+def store_event_type(update, context) -> int:
+    """Store event type and asks event venue(s)."""
+    user_input = update.message.text.strip()
+    if user_input not in K.event_types:
+        update.message.reply_text(text.help_event_type)
+        return STORE_EVENT_TYPE
+    else:
+        try:
+            context.user_data['event'].event_type = user_input
+        except BadEventAttrError as e:
+            update.message.reply_text(str(e))
+            return STORE_EVENT_TYPE
+
+    if context.user_data['event'].event_type != 'Rassegna':
+        update.message.reply_text(text.ask_venue_name)
+        return STORE_EVENT_VENUE
+    else:
+        update.message.reply_text(text.ask_num_events)
+        return STORE_NUM_EVENTS
+
+
+def store_event_venues_calendar(update, context) -> int:
+    """Stores events venues for a calendar of events."""
+    user_input = update.message.text.strip()
+    if ',' in user_input:
+        venues = [venue.strip() for venue in user_input.split(',')]
+
+        if len(venues) != len(context.user_data['calendar']):
+            update.message.reply_text(text.ack_wrong_number_venues)
+            return STORE_EVENT_VENUES_CALENDAR
+
+        for event_idx, venue in enumerate(venues):
+            try:
+                context.user_data['calendar'][event_idx].venue = venue
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_EVENT_VENUES_CALENDAR
+    else:
+        for event in context.user_data['calendar']:
+            try:
+                event.venue = user_input
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_EVENT_VENUES_CALENDAR
+    update.message.reply_text(text.ask_start_dates_calendar)
+    return STORE_START_DATES_CALENDAR
 
 
 def ask_event_type(update, context) -> int:
@@ -75,11 +136,124 @@ def ask_start_date(update, context) -> int:
     else:
         try:
             context.user_data['event'].event_type = user_input
-            update.message.reply_text(text.ask_start_date)
-            return ASK_START_TIME
+
+            if context.user_data['event'].event_type != 'Rassegna':
+                update.message.reply_text(text.ask_start_date)
+                return ASK_START_TIME
+            else:
+                update.message.reply_text(text.ask_num_events)
+                return STORE_NUM_EVENTS
         except BadEventAttrError as e:
             update.message.reply_text(str(e))
             return ASK_START_DATE
+
+
+def store_num_events(update, context) -> int:
+    """Creates a list of events based on the user input."""
+    try:
+        num_events = int(update.message.text.strip())
+    except ValueError:
+        update.message.reply_text("Formato non valido, invia un singolo numero:")
+        return STORE_NUM_EVENTS
+
+    if num_events < 2:
+        update.message.reply_text(text.ack_wrong_number_events)
+        return STORE_NUM_EVENTS
+    else:
+        context.user_data['calendar'] = [Event()]*num_events
+        update.message.reply_text(text.ask_event_venues_calendar)
+        return STORE_EVENT_VENUES_CALENDAR
+
+
+def store_start_dates_calendar(update, context) -> int:
+    """Stores start dates for a calendar of events."""
+    user_input = update.message.text.strip()
+    if ',' in user_input:
+        dates = [date.strip() for date in user_input.split(',')]
+
+        if len(dates) != len(context.user_data['calendar']):
+            update.message.reply_text(text.ack_wrong_number_dates)
+            return STORE_START_DATES_CALENDAR
+
+        for event_idx, date in enumerate(dates):
+            try:
+                context.user_data['calendar'][event_idx].start_date = date
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_START_DATES_CALENDAR
+    else:
+        for event in context.user_data['calendar']:
+            try:
+                event.start_date = user_input
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_START_DATES_CALENDAR
+    update.message.reply_text(text.ask_start_times_calendar)
+    return STORE_START_TIMES_CALENDAR
+
+
+def store_start_times_calendar(update, context) -> int:
+    """Stores start times for a calendar of events."""
+    user_input = update.message.text.strip()
+    if ',' in user_input:
+        start_times = [time.strip() for time in user_input.split(',')]
+
+        if len(start_times) != len(context.user_data['calendar']):
+            update.message.reply_text(text.ack_wrong_number_start_times)
+            return STORE_START_TIMES_CALENDAR
+
+        for event_idx, time in enumerate(start_times):
+            try:
+                context.user_data['calendar'][event_idx].start_time = time
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_START_DATES_CALENDAR
+    else:
+        for event in context.user_data['calendar']:
+            try:
+                event.start_time = user_input
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_START_DATES_CALENDAR
+    update.message.reply_text(text.ask_events_duration_calendar)
+    return STORE_EVENTS_DURATION_CALENDAR
+
+
+def store_events_duration_calendar(update, context) -> int:
+    """Stores durations of events in a calendar of events."""
+    user_input = update.message.text.strip()
+    if ',' in user_input:
+        try:
+            durations = [int(duration.strip()) for duration in user_input.split(',')]
+        except ValueError:
+            update.message.reply_text("Formato non valido.")
+            update.message.reply_text(text.ask_events_duration_calendar)
+
+        if len(durations) != len(context.user_data['calendar']):
+            update.message.reply_text(text.ack_wrong_number_durations)
+            return STORE_EVENTS_DURATION_CALENDAR
+
+        for event_idx, event_duration in enumerate(durations):
+            try:
+                context.user_data['calendar'][event_idx].set_duration(event_duration)
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_EVENTS_DURATION_CALENDAR
+    else:
+        try:
+            event_duration = int(update.message.text.strip())
+        except ValueError:
+            update.message.reply_text("Formato non valido.")
+            update.message.reply_text(text.ask_events_duration_calendar)
+
+        for event in context.user_data['calendar']:
+            try:
+                event.set_duration(event_duration)
+            except BadEventAttrError as e:
+                update.message.reply_text(str(e))
+                return STORE_EVENTS_DURATION_CALENDAR
+    update.message.reply_text(text.ask_category, reply_markup=K.category)
+    return ASK_DESCRIPTION
 
 
 def ask_start_time(update, context) -> int:
@@ -95,6 +269,7 @@ def ask_start_time(update, context) -> int:
     elif context.user_data['event'].event_type == 'Esposizione':
         update.message.reply_text(text.ask_end_date)
         return STORE_END_DATE
+
 
 def ask_add_end_date(update, context) -> int:
     """Stores start time, checks if there is already a similar event,
@@ -348,8 +523,10 @@ def cancel(update, context) -> int:
 event_conv_handler = ConversationHandler(
         entry_points=[CommandHandler("evento", ask_poster)],
         states={
-            ASK_NAME: [MessageHandler(F.photo, ask_event_name)],
-            ASK_VENUE: [MessageHandler(F.text & (~ F.command), ask_event_venue)],
+            STORE_POSTER: [MessageHandler(F.photo, store_poster)],
+            STORE_EVENT_NAME: [MessageHandler(F.text & (~ F.command), store_event_name)],
+            STORE_EVENT_TYPE: [MessageHandler(F.text, store_event_type)],
+            STORE_EVENT_VENUE: [MessageHandler(F.text, store_event_venue)],
             ASK_EVENT_TYPE: [MessageHandler(F.text & (~ F.command), ask_event_type)],
             ASK_START_DATE: [MessageHandler(F.text & (~ F.command), ask_start_date)],
             ASK_START_TIME: [MessageHandler(F.text, ask_start_time)],
@@ -362,6 +539,11 @@ event_conv_handler = ConversationHandler(
             ASK_END_TIME_PATH_NO_END_DATE: [MessageHandler(F.regex("Sì"), ask_end_time_path_no_end_date),
                           MessageHandler(F.regex("No"), ask_category_path_no_end_time)],
             STORE_OPENING_HOURS: [MessageHandler(F.text, store_opening_hours)],
+            STORE_NUM_EVENTS: [MessageHandler(F.text, store_num_events)],
+            STORE_EVENT_VENUES_CALENDAR: [MessageHandler(F.text, store_event_venues_calendar)],
+            STORE_START_DATES_CALENDAR: [MessageHandler(F.text, store_start_dates_calendar)],
+            STORE_START_TIMES_CALENDAR: [MessageHandler(F.text, store_start_times_calendar)],
+            STORE_EVENTS_DURATION_CALENDAR: [MessageHandler(F.text, store_events_duration_calendar)],
             ASK_CATEGORY_PATH_END_TIME: [MessageHandler(F.text, ask_category_path_end_time)],
             ASK_DESCRIPTION: [MessageHandler(F.text & (~ F.command), ask_description)],
             ASK_PUBLICATION_DATE: [MessageHandler(F.text & (~ F.command), ask_publication_date)],
