@@ -6,7 +6,8 @@ from test_db import get_dummy_event
 from arcipelago.event import Event
 from arcipelago.conversations.create_event import (ask_poster, store_poster, store_event_name, ask_start_date,
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, store_end_date, store_opening_hours,
-	ask_end_time_path_end_date, ask_category_path_end_time, ask_description,
+	store_event_venues_calendar, store_num_events, store_start_dates_calendar, store_start_times_calendar,
+	store_events_duration_calendar, ask_end_time_path_end_date, ask_category_path_end_time, ask_description,
 	ask_publication_date, ask_confirm_submission, process_submitted_event)
 from arcipelago.conversations.create_event import (STORE_POSTER, STORE_EVENT_NAME, STORE_EVENT_TYPE,
 	ASK_START_DATE, ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
@@ -14,6 +15,9 @@ from arcipelago.conversations.create_event import (STORE_POSTER, STORE_EVENT_NAM
 	STORE_START_TIMES_CALENDAR, STORE_EVENTS_DURATION_CALENDAR, ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION,
 	ASK_PUBLICATION_DATE, ASK_CONFIRM_SUBMISSION, PROCESS_EVENT)
 from arcipelago.config import chatbot_token, authorized_users
+
+
+NOW = datetime.datetime.now()
 
 
 def test_ask_poster():
@@ -28,6 +32,115 @@ def test_store_poster():
 	update = MockUpdate(MockMessage())
 	context = MockContext()
 	assert store_poster(update, context) == STORE_EVENT_NAME
+
+
+def test_store_event_venues_calendar():
+	num_events = 4
+	dummy_calendar = [Event() for _ in range(num_events)]
+	context = MockContext()
+	context.user_data['calendar'] = dummy_calendar
+
+	## multiple values
+	# wrong number of values
+	update = MockUpdate(MockMessage('Luogo 1, Luogo 2'))
+	assert store_event_venues_calendar(update, context) == STORE_EVENT_VENUES_CALENDAR
+
+	# right values
+	update = MockUpdate(MockMessage('Luogo 1, Luogo 2, Luogo 3, Luogo 4'))
+	assert store_event_venues_calendar(update, context) == STORE_START_DATES_CALENDAR
+
+	## single value
+	# right value
+	update = MockUpdate(MockMessage('Luogo 1'))
+	assert store_event_venues_calendar(update, context) == STORE_START_DATES_CALENDAR
+
+
+def test_store_num_events():
+	pass
+
+
+def test_store_start_dates_calendar():
+	## multiple values
+	# wrong number of values
+
+	# only one wrong value
+
+	# all wrong values
+
+	# right values
+
+	## single value
+	# wrong value
+
+	# right value
+	pass
+
+
+def test_store_start_times_calendar():
+	num_events = 4
+	dummy_calendar = [Event() for _ in range(num_events)]
+	context = MockContext()
+
+	def start_time_tests(context):
+		## multiple values
+		# wrong number of values
+		update = MockUpdate(MockMessage('20:00, 10:00'))
+		assert store_start_times_calendar(update, context) == STORE_START_TIMES_CALENDAR
+
+		# only one wrong value
+		update = MockUpdate(MockMessage('20:00, 20:00, 10:00, 10'))
+		assert store_start_times_calendar(update, context) == STORE_START_TIMES_CALENDAR
+
+		# all wrong values
+		update = MockUpdate(MockMessage('20, 20, 10, 10'))
+		assert store_start_times_calendar(update, context) == STORE_START_TIMES_CALENDAR
+
+		# right values
+		update = MockUpdate(MockMessage('20:00, 20:00, 10:00, 10:00'))
+		assert store_start_times_calendar(update, context) == STORE_EVENTS_DURATION_CALENDAR
+
+		## single value
+		# wrong value
+		update = MockUpdate(MockMessage('50'))
+		assert store_start_times_calendar(update, context) == STORE_START_TIMES_CALENDAR
+
+		# right value
+		update = MockUpdate(MockMessage('20:00'))
+		assert store_start_times_calendar(update, context) == STORE_EVENTS_DURATION_CALENDAR
+
+	# single start date
+	start_date = (NOW + datetime.timedelta(days=1)).date()
+	for event in dummy_calendar:
+		event.start_date = start_date
+	context.user_data['calendar'] = dummy_calendar
+	start_time_tests(context)
+
+	# multiple start dates
+	start_dates = [(NOW + datetime.timedelta(days=1)).date(),
+				   (NOW + datetime.timedelta(days=1)).date(),
+				   (NOW + datetime.timedelta(days=2)).date(),
+				   (NOW + datetime.timedelta(days=2)).date()]
+	for event, start_date in zip(dummy_calendar, start_dates):
+		event.start_date = start_date
+	context.user_data['calendar'] = dummy_calendar
+	start_time_tests(context)
+
+
+def test_store_events_duration_calendar():
+	## multiple values
+	# wrong number of values
+
+	# only one wrong value
+
+	# all wrong values
+
+	# right values
+
+	## single value
+	# wrong value
+
+	# right value
+	pass
 
 
 def test_store_event_name():
@@ -52,18 +165,18 @@ def test_ask_start_time():
 	assert ask_start_time(update, context) == ASK_START_TIME
 
 	# past date
-	past_date = (datetime.datetime.now().date() - datetime.timedelta(days=1)).strftime('%d.%m.%Y')
+	past_date = (NOW.date() - datetime.timedelta(days=1)).strftime('%d.%m.%Y')
 	update = MockUpdate(MockMessage(past_date))
 	context = MockContext(event=Event())
 	assert ask_start_time(update, context) == ASK_START_TIME
 
-	start_date = datetime.datetime.now().date().strftime('%d.%m.%Y')
+	start_date = NOW.date().strftime('%d.%m.%Y')
 	update = MockUpdate(MockMessage(start_date))
 	mock_event = Event(_event_type='Evento singolo')
 	context = MockContext(event=mock_event)
 	assert ask_start_time(update, context) == ASK_ADD_END_DATE
 
-	start_date = datetime.datetime.now().date().strftime('%d.%m.%Y')
+	start_date = NOW.date().strftime('%d.%m.%Y')
 	mock_event = Event(_event_type='Esposizione')
 	update = MockUpdate(MockMessage(start_date))
 	context = MockContext(event=mock_event)
@@ -85,7 +198,7 @@ def test_ask_add_end_date():
 	# TODO: add test
 
 	# Rassegna o esposizione
-	now_plus_1h = (datetime.datetime.now() + datetime.timedelta(hours=1))
+	now_plus_1h = (NOW + datetime.timedelta(hours=1))
 	start_time = now_plus_1h.time().strftime('%H:%M')
 	update = MockUpdate(MockMessage(start_time))
 	dummy_event = Event()
@@ -136,7 +249,7 @@ def test_store_end_date():
 	update = MockUpdate(MockMessage('30.2.100'))
 	assert store_end_date(update, context) == STORE_END_DATE
 
-	now_date = datetime.datetime.now().date()
+	now_date = NOW.date()
 	tomorrow_date = now_date + datetime.timedelta(days=1)
 	update = MockUpdate(MockMessage(tomorrow_date.strftime('%d.%m.%Y')))
 	context = MockContext(event=Event(_start_date=now_date, _event_type='Evento singolo'))
@@ -158,18 +271,18 @@ def test_store_opening_hours():
 
 	# wrong values
 	update = MockUpdate(MockMessage('20:00 - 10:00'))
-	now_date = datetime.datetime.now().date()
+	now_date = NOW.date()
 	tomorrow_date = now_date + datetime.timedelta(days=1)
 	context = MockContext(event=Event(_event_type='Esposizione', _start_date=now_date, _end_date=tomorrow_date))
 	assert store_opening_hours(update, context) == STORE_OPENING_HOURS
 
 	# right values
-	now = datetime.datetime.now()
-	now_date, now_time = now.date(), (now + datetime.timedelta(minutes=5)).time()
-	tomorrow_date = now_date + datetime.timedelta(days=1)
-	ten_hrs_from_now_time = (now + datetime.timedelta(hours=10)).time()
-	update = MockUpdate(MockMessage(f'{now_time.strftime("%H:%M")} - {ten_hrs_from_now_time.strftime("%H:%M")}'))
-	context = MockContext(event=Event(_event_type='Esposizione', _start_date=now_date, _end_date=tomorrow_date))
+	now_date = NOW.date()
+	time_10am, time8pm = '10:00', '20:00'
+	tomorrow = now_date + datetime.timedelta(days=1)
+	ten_days_from_now = now_date + datetime.timedelta(days=10)
+	update = MockUpdate(MockMessage(f'{time_10am} - {time8pm}'))
+	context = MockContext(event=Event(_event_type='Esposizione', _start_date=tomorrow, _end_date=ten_days_from_now))
 	assert store_opening_hours(update, context) == ASK_DESCRIPTION
 
 
@@ -187,7 +300,7 @@ def test_ask_end_time_path_end_date():
 	update = MockUpdate(MockMessage('30.2.100'))
 	assert ask_end_time_path_end_date(update, context) == ASK_END_TIME_PATH_END_DATE
 
-	now_date = datetime.datetime.now().date()
+	now_date = NOW.date()
 	tomorrow_date = now_date + datetime.timedelta(days=1)
 	update = MockUpdate(MockMessage(tomorrow_date.strftime('%d.%m.%Y')))
 	context = MockContext(event=Event(_start_date=now_date))
@@ -198,7 +311,7 @@ def test_ask_category_path_end_time():
 	# Evento singolo
 	dummy_event = Event()
 	dummy_event.event_type = 'Evento singolo'
-	dummy_event.start_datetime = datetime.datetime.now()
+	dummy_event.start_datetime = NOW
 
 	# wrong format
 	update = MockUpdate(MockMessage('2 ore'))
@@ -227,7 +340,7 @@ def test_ask_category_path_end_time():
 
 	# wrong values
 	dummy_event = Event()
-	now_datetime = datetime.datetime.now()
+	now_datetime = NOW
 	dummy_event.start_datetime = now_datetime
 	wrong_time = (now_datetime - datetime.timedelta(hours=1)).time()
 	update = MockUpdate(MockMessage(wrong_time.strftime('%H:%M')))
@@ -278,7 +391,7 @@ def test_ask_confirm_submission():
 	update = MockUpdate(MockMessage('30.2.100'))
 	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
 
-	now_date = datetime.datetime.now().date().strftime('%d.%m.%Y')
+	now_date = NOW.date().strftime('%d.%m.%Y')
 	update = MockUpdate(MockMessage(now_date))
 	event = get_dummy_event()
 	event.start_date = now_date

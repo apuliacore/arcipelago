@@ -196,14 +196,14 @@ def store_start_times_calendar(update, context) -> int:
                 context.user_data['calendar'][event_idx].start_time = time
             except BadEventAttrError as e:
                 update.message.reply_text(str(e))
-                return STORE_START_DATES_CALENDAR
+                return STORE_START_TIMES_CALENDAR
     else:
         for event in context.user_data['calendar']:
             try:
                 event.start_time = user_input
             except BadEventAttrError as e:
                 update.message.reply_text(str(e))
-                return STORE_START_DATES_CALENDAR
+                return STORE_START_TIMES_CALENDAR
     update.message.reply_text(text.ask_events_duration_calendar)
     return STORE_EVENTS_DURATION_CALENDAR
 

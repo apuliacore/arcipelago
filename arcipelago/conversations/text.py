@@ -8,6 +8,7 @@ poster = "Bene! Per iniziare invia la locandina dell'evento. Invia /cancel in qu
 ask_event_name = "Come si chiama l'evento?"
 ask_venue_name = "Ora inserisci il luogo dell'evento: [ad esempio: Teatro Petruzzelli, Bari]"
 ask_event_venues_calendar = "Inserisci i luoghi in cui si terranno gli eventi. Puoi inserire più luoghi separati da virgole oppure un solo luogo se tutti gli eventi si terranno nello stesso posto."
+ack_wrong_number_venues = "Hai inserito un numero di luoghi diverso dal numero di eventi in calendario. Inserisci un solo luogo, se vale per tutti gli eventi, oppure tanti quanti gli eventi in calendario."
 ask_event_type = "Scegli la tipologia di evento da creare:"
 help_event_type = "Scegli una tipologia di evento tra i valori predefiniti:"
 ask_start_date = "Perfetto! Ora inserisci la data di inizio evento: [formato gg.mm.aaaa]"
