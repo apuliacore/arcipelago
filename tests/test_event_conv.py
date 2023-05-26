@@ -163,12 +163,12 @@ def test_store_opening_hours():
 	assert store_opening_hours(update, context) == STORE_OPENING_HOURS
 
 	# right values
-	now = datetime.datetime.now()
-	now_date, now_time = now.date(), (now + datetime.timedelta(minutes=5)).time()
-	tomorrow_date = now_date + datetime.timedelta(days=1)
-	ten_hrs_from_now_time = (now + datetime.timedelta(hours=10)).time()
-	update = MockUpdate(MockMessage(f'{now_time.strftime("%H:%M")} - {ten_hrs_from_now_time.strftime("%H:%M")}'))
-	context = MockContext(event=Event(_event_type='Esposizione', _start_date=now_date, _end_date=tomorrow_date))
+	now_date = datetime.datetime.now().date()
+	time_10am, time8pm = '10:00', '20:00'
+	tomorrow = now_date + datetime.timedelta(days=1)
+	ten_days_from_now = now_date + datetime.timedelta(days=10)
+	update = MockUpdate(MockMessage(f'{time_10am} - {time8pm}'))
+	context = MockContext(event=Event(_event_type='Esposizione', _start_date=tomorrow, _end_date=ten_days_from_now))
 	assert store_opening_hours(update, context) == ASK_DESCRIPTION
 
 
