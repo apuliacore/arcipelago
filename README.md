@@ -13,7 +13,7 @@ Follow these steps if you want to run a new instance of the bot.
 In order to run the instance, you will need to create a new bot via [BotFather](https://telegram.me/BotFather), as well as a channel (i.e., the public event wall) and a group for admins.
 You will need to add the bot token and the chat IDs for the public channel and the admin group in the config file.
 
-Currenly, the installation process has only been tested on Ubuntu Linux 20.04.3 LTS.
+Currently, the installation process has only been tested on Ubuntu Linux 20.04.3 LTS.
 
 ### Ubuntu Linux
 1. This project is packaged using Poetry: install it following the steps described in the [official website](https://python-poetry.org/docs/#installation)
