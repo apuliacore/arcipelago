@@ -89,12 +89,12 @@ def ask_start_time(update, context) -> int:
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
         return ASK_START_TIME
-    if context.user_data['event'].event_type == 'Evento singolo':
-        update.message.reply_text(text.ask_start_time)
-        return ASK_ADD_END_DATE
-    elif context.user_data['event'].event_type == 'Esposizione':
+    if context.user_data['event'].event_type == 'Esposizione':
         update.message.reply_text(text.ask_end_date)
         return STORE_END_DATE
+    else:
+        update.message.reply_text(text.ask_start_time)
+        return ASK_ADD_END_DATE
 
 def ask_add_end_date(update, context) -> int:
     """Stores start time, checks if there is already a similar event,
