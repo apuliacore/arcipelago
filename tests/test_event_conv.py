@@ -405,8 +405,10 @@ def test_ask_category_path_end_time():
 	assert ask_category_path_end_time(update, context) == ASK_CATEGORY_PATH_END_TIME
 
 	# correct
-	right_time = (now_datetime + datetime.timedelta(hours=1)).time()
+	right_datetime = (now_datetime + datetime.timedelta(hours=1))
+	right_time = right_datetime.time()
 	update = MockUpdate(MockMessage(right_time.strftime('%H:%M')))
+	dummy_event.end_date = right_datetime.date()
 	context = MockContext(dummy_event)
 	assert ask_category_path_end_time(update, context) == ASK_DESCRIPTION
 
