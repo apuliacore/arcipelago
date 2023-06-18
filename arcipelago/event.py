@@ -435,8 +435,32 @@ class Calendar(Event):
         self.events = []
 
     @property
+    def name(self):
+        return self._name
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def from_chat(self):
+        return self._from_chat
+
+    @property
+    def telegram_link(self):
+        return self._telegram_link
+
+    @property
     def publication_date(self):
         return self._publication_date
+
+    @property
+    def categories(self):
+        return self._categories
+
+    @property
+    def event_type(self):
+        return self._event_type
 
     @publication_date.setter
     def publication_date(self, value):
@@ -458,6 +482,42 @@ class Calendar(Event):
             self._publication_date = value
         else:
             raise BadEventAttrError(f"Start datetime should be of type {datetime.date} or {str}, not {type(value)}")
+
+    @name.setter
+    def name(self, value):
+        Event.name.fset(self, value)
+        for event in self.events:
+            event.name = value
+
+    @description.setter
+    def description(self, value):
+        Event.description.fset(self, value)
+        for event in self.events:
+            event.description = value
+
+    @from_chat.setter
+    def from_chat(self, value):
+        Event.from_chat.fset(self, value)
+        for event in self.events:
+            event.from_chat = value
+
+    @telegram_link.setter
+    def telegram_link(self, value):
+        Event.telegram_link.fset(self, value)
+        for event in self.events:
+            event.telegram_link = value
+
+    @event_type.setter
+    def event_type(self, value):
+        Event.event_type.fset(self, value)
+        for event in self.events:
+            event.event_type = value
+
+    @categories.setter
+    def categories(self, value):
+        Event.categories.fset(self, value)
+        for event in self.events:
+            event.categories = value
 
     def html(self):
         name = self.emoji + " " + self.name

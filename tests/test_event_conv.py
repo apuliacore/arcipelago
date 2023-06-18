@@ -59,6 +59,8 @@ def test_store_event_venues_calendar():
 def test_store_num_events():
 	# wrong type
 	context = MockContext()
+	context.user_data['old_event'] = Event()
+	context.user_data['old_event'].from_chat = 1
 	update = MockUpdate(MockMessage('due'))
 	assert store_num_events(update, context) == STORE_NUM_EVENTS
 

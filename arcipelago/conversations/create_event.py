@@ -75,9 +75,7 @@ def store_event_type(update, context) -> int:
         return STORE_EVENT_VENUE
     else:
         calendar = Calendar()
-        calendar.from_chat = context.user_data['event'].from_chat
-        calendar.name = context.user_data['event'].name
-        calendar.event_type = context.user_data['event'].event_type
+        context.user_data['old_event'] = context.user_data['event']
         context.user_data['event'] = calendar
         update.message.reply_text(text.ask_num_events)
         return STORE_NUM_EVENTS
@@ -99,6 +97,9 @@ def store_num_events(update, context) -> int:
         return STORE_NUM_EVENTS
     else:
         context.user_data['event'].events = [Event() for _ in range(num_events)]
+        context.user_data['event'].from_chat = context.user_data['old_event'].from_chat
+        context.user_data['event'].name = context.user_data['old_event'].name
+        context.user_data['event'].event_type = context.user_data['old_event'].event_type
         update.message.reply_text(text.ask_event_venues_calendar)
         return STORE_EVENT_VENUES_CALENDAR
 
