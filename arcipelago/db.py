@@ -63,6 +63,22 @@ def get_connection():
 
 
 def insert_event(event):
+	if event.event_type == 'Rassegna':
+		events_ids = insert_calendar(event)
+		event_id = insert_single_event(event)
+	else:
+		event_id = insert_single_event(event)
+	return event_id
+
+
+def insert_calendar(calendar):
+	events_ids = []
+	for event in calendar.events:
+		events_ids.append(insert_single_event(event))
+	return events_ids
+
+
+def insert_single_event(event):
 	event_dict = event.to_dict()
 	execute_query(
 		"INSERT INTO event (name, venue, verified_venue_id,\

@@ -3,7 +3,7 @@ import datetime
 from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext, MockUser
 from test_db import get_dummy_event
-from arcipelago.event import Event
+from arcipelago.event import Event, Calendar
 from arcipelago.conversations.create_event import (ask_poster, store_poster, store_event_name, ask_start_date,
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, store_end_date, store_opening_hours,
 	store_event_venues_calendar, store_num_events, store_start_dates_calendar, store_start_times_calendar,
@@ -36,9 +36,10 @@ def test_store_poster():
 
 def test_store_event_venues_calendar():
 	num_events = 4
-	dummy_calendar = [Event() for _ in range(num_events)]
+	dummy_calendar = Calendar()
+	dummy_calendar.events = [Event() for _ in range(num_events)]
 	context = MockContext()
-	context.user_data['calendar'] = dummy_calendar
+	context.user_data['event'] = dummy_calendar
 
 	## multiple values
 	# wrong number of values
@@ -56,29 +57,63 @@ def test_store_event_venues_calendar():
 
 
 def test_store_num_events():
-	pass
+	# wrong type
+	context = MockContext()
+	update = MockUpdate(MockMessage('due'))
+	assert store_num_events(update, context) == STORE_NUM_EVENTS
+
+	# wrong value
+	update = MockUpdate(MockMessage('1'))
+	assert store_num_events(update, context) == STORE_NUM_EVENTS
+	update = MockUpdate(MockMessage('21'))
+	assert store_num_events(update, context) == STORE_NUM_EVENTS
+
+	# right value
+	update = MockUpdate(MockMessage('7'))
+	assert store_num_events(update, context) == STORE_EVENT_VENUES_CALENDAR
+	assert len(context.user_data['event'].events) == 7
 
 
 def test_store_start_dates_calendar():
+	num_events = 5
+	dummy_calendar = Calendar()
+	dummy_calendar.events = [Event() for _ in range(num_events)]
+	context = MockContext()
+	context.user_data['event'] = dummy_calendar
+
 	## multiple values
 	# wrong number of values
+	update = MockUpdate(MockMessage('21.05.2023, 21.05.2023'))
+	assert store_start_dates_calendar(update, context) == STORE_START_DATES_CALENDAR
 
 	# only one wrong value
+	update = MockUpdate(MockMessage('21/05/2023, 21.05.2023, 21.05.2023, 21.05.2023, 21.05.2023'))
+	assert store_start_dates_calendar(update, context) == STORE_START_DATES_CALENDAR
 
 	# all wrong values
+	update = MockUpdate(MockMessage('21/05/2023, 21/05/2023, 21/05/2023, 21/05/2023, 21/05/2023'))
+	assert store_start_dates_calendar(update, context) == STORE_START_DATES_CALENDAR
 
 	# right values
+	now = NOW.date().strftime('%d.%m.%Y')
+	tomorrow_date = (NOW + datetime.timedelta(days=1)).date().strftime('%d.%m.%Y')
+	update = MockUpdate(MockMessage(f'{now}, {now}, {tomorrow_date}, {tomorrow_date}, {tomorrow_date}'))
+	assert store_start_dates_calendar(update, context) == STORE_START_TIMES_CALENDAR
 
 	## single value
 	# wrong value
+	update = MockUpdate(MockMessage('21/05/2023'))
+	assert store_start_dates_calendar(update, context) == STORE_START_DATES_CALENDAR
 
 	# right value
-	pass
+	update = MockUpdate(MockMessage(now))
+	assert store_start_dates_calendar(update, context) == STORE_START_TIMES_CALENDAR
 
 
 def test_store_start_times_calendar():
 	num_events = 4
-	dummy_calendar = [Event() for _ in range(num_events)]
+	dummy_calendar = Calendar()
+	dummy_calendar.events = [Event() for _ in range(num_events)]
 	context = MockContext()
 
 	def start_time_tests(context):
@@ -110,9 +145,9 @@ def test_store_start_times_calendar():
 
 	# single start date
 	start_date = (NOW + datetime.timedelta(days=1)).date()
-	for event in dummy_calendar:
+	for event in dummy_calendar.events:
 		event.start_date = start_date
-	context.user_data['calendar'] = dummy_calendar
+	context.user_data['event'] = dummy_calendar
 	start_time_tests(context)
 
 	# multiple start dates
@@ -120,27 +155,47 @@ def test_store_start_times_calendar():
 				   (NOW + datetime.timedelta(days=1)).date(),
 				   (NOW + datetime.timedelta(days=2)).date(),
 				   (NOW + datetime.timedelta(days=2)).date()]
-	for event, start_date in zip(dummy_calendar, start_dates):
+	for event, start_date in zip(dummy_calendar.events, start_dates):
 		event.start_date = start_date
-	context.user_data['calendar'] = dummy_calendar
+	context.user_data['event'] = dummy_calendar
 	start_time_tests(context)
 
 
 def test_store_events_duration_calendar():
+	num_events = 3
+	dummy_calendar = Calendar()
+	dummy_calendar.events = [Event() for _ in range(num_events)]
+	for event in dummy_calendar.events:
+		event.start_date = NOW.date()
+		event.start_time = NOW.time()
+	context = MockContext()
+	context.user_data['event'] = dummy_calendar
+
 	## multiple values
 	# wrong number of values
+	update = MockUpdate(MockMessage('2, 3'))
+	store_events_duration_calendar(update, context) == STORE_EVENTS_DURATION_CALENDAR
 
 	# only one wrong value
+	update = MockUpdate(MockMessage('uno, 2, 3'))
+	store_events_duration_calendar(update, context) == STORE_EVENTS_DURATION_CALENDAR
 
 	# all wrong values
+	update = MockUpdate(MockMessage('uno, due, tre'))
+	store_events_duration_calendar(update, context) == STORE_EVENTS_DURATION_CALENDAR
 
 	# right values
+	update = MockUpdate(MockMessage('1, 2, 3'))
+	store_events_duration_calendar(update, context) == ASK_DESCRIPTION
 
 	## single value
 	# wrong value
+	update = MockUpdate(MockMessage('uno'))
+	store_events_duration_calendar(update, context) == STORE_EVENTS_DURATION_CALENDAR
 
 	# right value
-	pass
+	update = MockUpdate(MockMessage('1'))
+	store_events_duration_calendar(update, context) == ASK_DESCRIPTION
 
 
 def test_store_event_name():
@@ -358,23 +413,41 @@ def test_ask_description():
 	# non-existent category
 	update = MockUpdate(MockMessage('concerti'))
 	context = MockContext()
-
 	assert ask_description(update, context) == ASK_DESCRIPTION
 
 	update = MockUpdate(MockMessage('🎹 musica'))
+	assert ask_description(update, context) == ASK_PUBLICATION_DATE
 
+	# event is a calendar
+	dummy_calendar = Calendar()
+	dummy_calendar.events = [Event() for _ in range(3)]
+	context = MockContext()
+	context.user_data['event'] = dummy_calendar
+
+	update = MockUpdate(MockMessage('concerti'))
+	assert ask_description(update, context) == ASK_DESCRIPTION
+
+	update = MockUpdate(MockMessage('🎹 musica'))
 	assert ask_description(update, context) == ASK_PUBLICATION_DATE
 
 
 def test_ask_publication_date():
-	# too long description
-	update = MockUpdate(MockMessage('prova'*300))
-	context = MockContext(get_dummy_event())
-	assert ask_publication_date(update, context) == ASK_PUBLICATION_DATE
+	# test case event is a calendar
+	dummy_calendar = Calendar()
+	dummy_calendar.events = [Event() for _ in range(3)]
+	for event in dummy_calendar.events:
+		event.start_datetime = NOW + datetime.timedelta(days=1)
+	mock_events = [get_dummy_event(), dummy_calendar]
 
-	update = MockUpdate(MockMessage('prova'))
-	context = MockContext(get_dummy_event())
-	assert ask_publication_date(update, context) == ASK_CONFIRM_SUBMISSION
+	for event in mock_events:
+		# too long description
+		update = MockUpdate(MockMessage('prova'*300))
+		context = MockContext(event)
+		assert ask_publication_date(update, context) == ASK_PUBLICATION_DATE
+
+		update = MockUpdate(MockMessage('prova'))
+		context = MockContext(event)
+		assert ask_publication_date(update, context) == ASK_CONFIRM_SUBMISSION
 
 
 def test_ask_confirm_submission():
@@ -391,12 +464,22 @@ def test_ask_confirm_submission():
 	update = MockUpdate(MockMessage('30.2.100'))
 	assert ask_confirm_submission(update, context) == ASK_CONFIRM_SUBMISSION
 
+	# test case normal event
 	now_date = NOW.date().strftime('%d.%m.%Y')
 	update = MockUpdate(MockMessage(now_date))
 	event = get_dummy_event()
 	event.start_date = now_date
-	context = MockContext(event)
-	assert ask_confirm_submission(update, context) == PROCESS_EVENT
+
+	# test case event is a calendar
+	dummy_calendar = Calendar()
+	dummy_calendar.events = [Event() for _ in range(3)]
+	for event in dummy_calendar.events:
+		event.start_datetime = NOW + datetime.timedelta(days=1)
+	mock_events = [event, dummy_calendar]
+
+	for event in mock_events:
+		context = MockContext(event)
+		assert ask_confirm_submission(update, context) == PROCESS_EVENT
 
 
 @pytest.mark.skip(reason="no way of currently testing this")

@@ -8,7 +8,7 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandl
 from telegram.ext.filters import Filters as F
 from arcipelago.config import notification_channel, authorized_users, chatbot_token
 from arcipelago.db import insert_event, set_confirmed, get_event_from_id
-from arcipelago.event import category2emoji, Event, check_events_collision, BadEventAttrError
+from arcipelago.event import category2emoji, Event, Calendar, check_events_collision, BadEventAttrError
 from arcipelago.notification import check_event_will_get_published, publish_event
 from arcipelago.conversations import text
 from arcipelago.conversations import keyboards as K
@@ -57,17 +57,6 @@ def store_event_name(update, context) -> int:
         return STORE_EVENT_NAME
 
 
-def store_event_venue(update, context) -> int:
-    """Stores event venue and asks start date."""
-    try:
-        context.user_data['event'].venue = update.message.text
-    except BadEventAttrError as e:
-        update.message.reply_text(str(e))
-        return STORE_EVENT_VENUE
-    update.message.reply_text(text.ask_start_date)
-    return ASK_START_TIME
-
-
 def store_event_type(update, context) -> int:
     """Store event type and asks event venue(s)."""
     user_input = update.message.text.strip()
@@ -85,8 +74,44 @@ def store_event_type(update, context) -> int:
         update.message.reply_text(text.ask_venue_name)
         return STORE_EVENT_VENUE
     else:
+        calendar = Calendar()
+        calendar.from_chat = context.user_data['event'].from_chat
+        calendar.name = context.user_data['event'].name
+        calendar.event_type = context.user_data['event'].event_type
+        context.user_data['event'] = calendar
         update.message.reply_text(text.ask_num_events)
         return STORE_NUM_EVENTS
+
+
+def store_num_events(update, context) -> int:
+    """Creates a list of events based on the user input."""
+    try:
+        num_events = int(update.message.text.strip())
+    except ValueError:
+        update.message.reply_text("Formato non valido, invia un singolo numero:")
+        return STORE_NUM_EVENTS
+
+    if num_events < 2:
+        update.message.reply_text(text.ack_wrong_number_events)
+        return STORE_NUM_EVENTS
+    elif num_events > 20:
+        update.message.reply_text(text.ack_too_many_events)
+        return STORE_NUM_EVENTS
+    else:
+        context.user_data['event'].events = [Event() for _ in range(num_events)]
+        update.message.reply_text(text.ask_event_venues_calendar)
+        return STORE_EVENT_VENUES_CALENDAR
+
+
+def store_event_venue(update, context) -> int:
+    """Stores event venue and asks start date."""
+    try:
+        context.user_data['event'].venue = update.message.text
+    except BadEventAttrError as e:
+        update.message.reply_text(str(e))
+        return STORE_EVENT_VENUE
+    update.message.reply_text(text.ask_start_date)
+    return ASK_START_TIME
 
 
 def store_event_venues_calendar(update, context) -> int:
@@ -95,18 +120,18 @@ def store_event_venues_calendar(update, context) -> int:
     if ',' in user_input:
         venues = [venue.strip() for venue in user_input.split(',')]
 
-        if len(venues) != len(context.user_data['calendar']):
+        if len(venues) != len(context.user_data['event'].events):
             update.message.reply_text(text.ack_wrong_number_venues)
             return STORE_EVENT_VENUES_CALENDAR
 
         for event_idx, venue in enumerate(venues):
             try:
-                context.user_data['calendar'][event_idx].venue = venue
+                context.user_data['event'].events[event_idx].venue = venue
             except BadEventAttrError as e:
                 update.message.reply_text(str(e))
                 return STORE_EVENT_VENUES_CALENDAR
     else:
-        for event in context.user_data['calendar']:
+        for event in context.user_data['event'].events:
             try:
                 event.venue = user_input
             except BadEventAttrError as e:
@@ -137,41 +162,24 @@ def ask_start_date(update, context) -> int:
             return ASK_START_DATE
 
 
-def store_num_events(update, context) -> int:
-    """Creates a list of events based on the user input."""
-    try:
-        num_events = int(update.message.text.strip())
-    except ValueError:
-        update.message.reply_text("Formato non valido, invia un singolo numero:")
-        return STORE_NUM_EVENTS
-
-    if num_events < 2:
-        update.message.reply_text(text.ack_wrong_number_events)
-        return STORE_NUM_EVENTS
-    else:
-        context.user_data['calendar'] = [Event()]*num_events
-        update.message.reply_text(text.ask_event_venues_calendar)
-        return STORE_EVENT_VENUES_CALENDAR
-
-
 def store_start_dates_calendar(update, context) -> int:
     """Stores start dates for a calendar of events."""
     user_input = update.message.text.strip()
     if ',' in user_input:
         dates = [date.strip() for date in user_input.split(',')]
 
-        if len(dates) != len(context.user_data['calendar']):
+        if len(dates) != len(context.user_data['event'].events):
             update.message.reply_text(text.ack_wrong_number_dates)
             return STORE_START_DATES_CALENDAR
 
         for event_idx, date in enumerate(dates):
             try:
-                context.user_data['calendar'][event_idx].start_date = date
+                context.user_data['event'].events[event_idx].start_date = date
             except BadEventAttrError as e:
                 update.message.reply_text(str(e))
                 return STORE_START_DATES_CALENDAR
     else:
-        for event in context.user_data['calendar']:
+        for event in context.user_data['event'].events:
             try:
                 event.start_date = user_input
             except BadEventAttrError as e:
@@ -187,18 +195,18 @@ def store_start_times_calendar(update, context) -> int:
     if ',' in user_input:
         start_times = [time.strip() for time in user_input.split(',')]
 
-        if len(start_times) != len(context.user_data['calendar']):
+        if len(start_times) != len(context.user_data['event'].events):
             update.message.reply_text(text.ack_wrong_number_start_times)
             return STORE_START_TIMES_CALENDAR
 
         for event_idx, time in enumerate(start_times):
             try:
-                context.user_data['calendar'][event_idx].start_time = time
+                context.user_data['event'].events[event_idx].start_time = time
             except BadEventAttrError as e:
                 update.message.reply_text(str(e))
                 return STORE_START_TIMES_CALENDAR
     else:
-        for event in context.user_data['calendar']:
+        for event in context.user_data['event'].events:
             try:
                 event.start_time = user_input
             except BadEventAttrError as e:
@@ -217,14 +225,15 @@ def store_events_duration_calendar(update, context) -> int:
         except ValueError:
             update.message.reply_text("Formato non valido.")
             update.message.reply_text(text.ask_events_duration_calendar)
+            return STORE_EVENTS_DURATION_CALENDAR
 
-        if len(durations) != len(context.user_data['calendar']):
+        if len(durations) != len(context.user_data['event'].events):
             update.message.reply_text(text.ack_wrong_number_durations)
             return STORE_EVENTS_DURATION_CALENDAR
 
         for event_idx, event_duration in enumerate(durations):
             try:
-                context.user_data['calendar'][event_idx].set_duration(event_duration)
+                context.user_data['event'].events[event_idx].set_duration(event_duration)
             except BadEventAttrError as e:
                 update.message.reply_text(str(e))
                 return STORE_EVENTS_DURATION_CALENDAR
@@ -234,8 +243,9 @@ def store_events_duration_calendar(update, context) -> int:
         except ValueError:
             update.message.reply_text("Formato non valido.")
             update.message.reply_text(text.ask_events_duration_calendar)
+            return STORE_EVENTS_DURATION_CALENDAR
 
-        for event in context.user_data['calendar']:
+        for event in context.user_data['event'].events:
             try:
                 event.set_duration(event_duration)
             except BadEventAttrError as e:

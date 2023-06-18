@@ -25,7 +25,7 @@ def add_event_to_gcalendar(event):
    service = build_service_obj()
    if service is not None:
       payload = {
-           'summary': event.name,
+           'summary': event.emoji + " " + event.name,
            'location': event.venue,
            'description': event.description,
            'start': {

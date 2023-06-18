@@ -63,6 +63,10 @@ class Event(object):
         return self._name
 
     @property
+    def emoji(self):
+        return category2emoji[self.categories] if self.categories else ""
+
+    @property
     def venue(self):
         return self._venue
 
@@ -366,8 +370,7 @@ class Event(object):
 
         venue = self.venue
         description = html.escape(self.description)
-        emoji = category2emoji[self.categories] if self.categories else ""
-        name = emoji + " " + self.name
+        name = self.emoji + " " + self.name
 
         if short:
             res_html = f"🕒{start_time}"
@@ -424,3 +427,48 @@ class Event(object):
             raise BadEventAttrError("La durata massima per un evento è 24 ore.")
         else:
             self.end_datetime = self.start_datetime + datetime.timedelta(hours=duration)
+
+
+class Calendar(Event):
+    def __init__(self):
+        super().__init__()
+        self.events = []
+
+    @property
+    def publication_date(self):
+        return self._publication_date
+
+    @publication_date.setter
+    def publication_date(self, value):
+        if isinstance(value, str):
+            if re.match(r"((\d{2}|\d{1})(\.)(\d{2}|\d{1})(\.)\d{4})", value) is None:
+                raise BadEventAttrError("La data che hai inserito ha un formato non valido. Manda una data in formato gg.mm.aaaa")
+            else:
+                dd, mm, yyyy = (int(t) for t in value.split('.'))
+                input_date = datetime.date(day=dd, month=mm, year=yyyy)
+                date_today = datetime.datetime.now().date()
+                if input_date < datetime.datetime.now().date():
+                    raise BadEventAttrError("La data che hai inserito è passata! Inserisci una data futura:")
+                elif input_date > self.events[0].start_date:
+                    raise BadEventAttrError("La data che hai inserito è successiva alla data dell'evento! Inserisci una data precedente:")
+                self._publication_date = input_date
+        elif isinstance(value, datetime.date):
+            if value > self.events[0].start_date:
+                raise BadEventAttrError("La data che hai inserito è successiva alla data dell'evento! Inserisci una data precedente:")
+            self._publication_date = value
+        else:
+            raise BadEventAttrError(f"Start datetime should be of type {datetime.date} or {str}, not {type(value)}")
+
+    def html(self):
+        name = self.emoji + " " + self.name
+
+        res_html = f"<code>{name}</code>\n"
+
+        for event in self.events:
+            start_datetime = event.start_datetime.strftime('%d.%m.%Y | %H:%M')
+            res_html += f"📅{start_datetime}"
+            res_html += f"""\n📍{event.venue}\n\n"""
+
+        description = html.escape(self.description)
+        res_html += f"""{description}"""
+        return res_html
