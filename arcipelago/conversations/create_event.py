@@ -50,7 +50,7 @@ def store_event_name(update, context) -> int:
     """Stores event name and asks event type."""
     try:
         context.user_data['event'].name = update.message.text
-        update.message.reply_text(text.ask_event_type, reply_markup=K.event_type)
+        update.message.reply_text(text.ask_event_type, reply_markup=K.event_type, parse_mode=telegram.ParseMode.HTML)
         return STORE_EVENT_TYPE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
