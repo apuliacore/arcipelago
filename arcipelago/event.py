@@ -439,6 +439,34 @@ class Calendar(Event):
         return self._name
 
     @property
+    def start_date(self):
+        if self.events:
+            return self.events[0].start_date
+        else:
+            return None
+
+    @property
+    def end_date(self):
+        if self.events:
+            return self.events[-1].end_date
+        else:
+            return None
+
+    @property
+    def start_time(self):
+        if self.events:
+            return self.events[0].start_time
+        else:
+            return None
+
+    @property
+    def end_time(self):
+        if self.events:
+            return self.events[0].end_time
+        else:
+            return None
+
+    @property
     def description(self):
         return self._description
 

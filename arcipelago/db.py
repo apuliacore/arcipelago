@@ -106,6 +106,10 @@ def get_event_from_id(event_id: int):
 	return execute_select_query("SELECT * FROM event WHERE id=(?)", (event_id,))
 
 
+def get_event_from_name(event_name: str):
+	return execute_select_query("SELECT * FROM event WHERE name=(?)", (event_name,))
+
+
 def set_published(event_id: int):
 	execute_query("UPDATE event SET published=True WHERE id=(?)", (event_id,))
 

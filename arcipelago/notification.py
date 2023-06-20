@@ -1,20 +1,20 @@
 import datetime
 import telegram
 from arcipelago.config import main_channel
-from arcipelago.db import get_events_to_be_published_today, set_published, get_events_in_date
+from arcipelago.db import get_events_to_be_published_today, set_published, get_events_in_date, get_event_from_name
 from arcipelago.event import Event
 from arcipelago.extra.gcalendar import add_event_to_gcalendar
 
 
-def get_next_hour_datetime(hour: int):
+def get_next_hour_datetime(hour: int, minutes: int = 0):
     if hour in range(0, 24):
         now = datetime.datetime.now()
         now_time = now.time()
         if now_time.hour < hour:
-            return datetime.datetime(now.year, now.month, now.day, hour, 0)
+            return datetime.datetime(now.year, now.month, now.day, hour, minutes)
         else:
             next_day = now + datetime.timedelta(days=1)
-            return datetime.datetime(next_day.year, next_day.month, next_day.day, hour, 0)
+            return datetime.datetime(next_day.year, next_day.month, next_day.day, hour, minutes)
     else:
         raise ValueError("Hour should be an integer value between 0 and 23.")
 
@@ -54,4 +54,11 @@ def publish_event(bot, event):
                     caption=event.html(),
                     parse_mode=telegram.ParseMode.HTML)
     set_published(event.id)
-    add_event_to_gcalendar(event)
+    if event.event_type != 'Rassegna':
+        add_event_to_gcalendar(event)
+    else:
+        children_events = get_event_from_name(event.name)
+        for event_res in children_events:
+            event = Event().load_from_res(event_res)
+            set_published(event.id)
+            add_event_to_gcalendar(event)
