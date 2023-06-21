@@ -20,7 +20,7 @@ def test_get_next_hour_datetime():
 	if now.hour < _8am:
 		assert dt8am.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(now.year, now.month, now.day, _8am, 0).strftime('%d.%m.%Y-%H:%M')
 		assert dt8pm.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(now.year, now.month, now.day, _8pm, 0).strftime('%d.%m.%Y-%H:%M')
-	elif _8am < now.hour < _8pm:
+	elif _8am <= now.hour < _8pm:
 		assert dt8am.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(next_day.year, next_day.month, next_day.day, _8am, 0).strftime('%d.%m.%Y-%H:%M')
 		assert dt8pm.strftime('%d.%m.%Y-%H:%M') == datetime.datetime(now.year, now.month, now.day, _8pm, 0).strftime('%d.%m.%Y-%H:%M')
 	else:

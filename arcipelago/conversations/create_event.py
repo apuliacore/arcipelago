@@ -573,6 +573,13 @@ def set_event_confirmation(update, context) -> None:
             parse_mode=telegram.ParseMode.HTML)
         if check_event_will_get_published(event) == False:
             publish_event(bot, event)
+
+        if event.event_type == 'Rassegna':
+            children_events = get_event_from_name(event.name)
+            for event_res in children_events:
+                event = Event().load_from_res(event_res)
+                set_confirmed(event.id)
+
     else:
         update.callback_query.edit_message_text(text=f"Evento non confermato da {admin.first_name} (@{admin.username}).")
         bot.sendMessage(chat_id=user_id, text=text.ack_event_not_accepted)
