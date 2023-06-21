@@ -54,11 +54,13 @@ def publish_event(bot, event):
                     caption=event.html(),
                     parse_mode=telegram.ParseMode.HTML)
     set_published(event.id)
+    original_event_id = event.id
     if event.event_type != 'Rassegna':
         add_event_to_gcalendar(event)
     else:
         children_events = get_event_from_name(event.name)
         for event_res in children_events:
             event = Event().load_from_res(event_res)
-            set_published(event.id)
-            add_event_to_gcalendar(event)
+            if event.id != original_event_id:
+                set_published(event.id)
+                add_event_to_gcalendar(event)
