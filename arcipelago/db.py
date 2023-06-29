@@ -14,13 +14,10 @@ def init_db(development=False):
 	cursor.execute("DROP TABLE IF EXISTS event;")
 	db_connection.commit()
 
-	cursor.execute("DROP TABLE IF EXISTS event_old;")
-	db_connection.commit()
-
 	cursor.execute("DROP TABLE IF EXISTS venue;")
 	db_connection.commit()
 
-	with open('schema_v2.sql', 'rb') as f:
+	with open('schema_v3.sql', 'rb') as f:
 		cursor.executescript(f.read().decode('utf8'))
 
 	if development:
@@ -65,7 +62,7 @@ def get_connection():
 def insert_event(event):
 	if event.event_type == 'Rassegna':
 		events_ids = insert_calendar(event)
-		event_id = insert_single_event(event)
+		event_id = events_ids[0]
 	else:
 		event_id = insert_single_event(event)
 	return event_id
@@ -83,8 +80,9 @@ def insert_single_event(event):
 	execute_query(
 		"INSERT INTO event (name, venue, verified_venue_id,\
 		 start_datetime, end_datetime, description, confirmed,\
-		 published, price, categories, from_chat, telegram_link, publication_date)\
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		 published, price, categories, from_chat, telegram_link,\
+		 publication_date, event_type)\
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		(event_dict['name'],
 		 event_dict['venue'],
 		 event_dict['verified_venue_id'],
@@ -97,7 +95,8 @@ def insert_single_event(event):
 		 event_dict['categories'],
 		 event_dict['from_chat'],
 		 event_dict['telegram_link'],
-		 event_dict['publication_date'])
+		 event_dict['publication_date'],
+		 event_dict['event_type'])
 	)
 	return get_id_last_added_in_table('event')[0][0]
 
@@ -107,7 +106,7 @@ def get_event_from_id(event_id: int):
 
 
 def get_event_from_name(event_name: str):
-	return execute_select_query("SELECT * FROM event WHERE name=(?)", (event_name,))
+	return execute_select_query("SELECT * FROM event WHERE name=(?) ORDER BY id", (event_name,))
 
 
 def set_published(event_id: int):

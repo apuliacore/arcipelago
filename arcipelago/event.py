@@ -351,6 +351,8 @@ class Event(object):
             self.telegram_link = res[12]
         if res[13] is not None:
             self.publication_date = res[13]
+        if res[14] is not None:
+            self.event_type = res[14]
         return self
 
     def html(self, short=False):
@@ -414,6 +416,7 @@ class Event(object):
             'from_chat': self.from_chat,
             'telegram_link': None,
             'publication_date': self.publication_date,
+            'event_type': self.event_type,
         }
 
     def get_str_repr(self):
@@ -429,14 +432,23 @@ class Event(object):
             self.end_datetime = self.start_datetime + datetime.timedelta(hours=duration)
 
 
-class Calendar(Event):
+class Calendar:
     def __init__(self):
-        super().__init__()
         self.events = []
 
     @property
+    def id(self):
+        if self.events:
+            return self.events[0].id
+        else:
+            return None
+
+    @property
     def name(self):
-        return self._name
+        if self.events:
+            return self.events[0].name
+        else:
+            return None
 
     @property
     def start_date(self):
@@ -468,27 +480,103 @@ class Calendar(Event):
 
     @property
     def description(self):
-        return self._description
+        if self.events:
+            return self.events[0].description
+        else:
+            return None
 
     @property
     def from_chat(self):
-        return self._from_chat
+        if self.events:
+            return self.events[0].from_chat
+        else:
+            return None
 
     @property
     def telegram_link(self):
-        return self._telegram_link
+        if self.events:
+            return self.events[0].telegram_link
+        else:
+            return None
 
     @property
     def publication_date(self):
-        return self._publication_date
+        if self.events:
+            return self.events[0].publication_date
+        else:
+            return None
+
+    @property
+    def confirmed(self):
+        if self.events:
+            return self.events[0].confirmed
+        else:
+            return None
 
     @property
     def categories(self):
-        return self._categories
+        if self.events:
+            return self.events[0].categories
+        else:
+            return None
 
     @property
     def event_type(self):
-        return self._event_type
+        if self.events:
+            return self.events[0].event_type
+        else:
+            return None
+
+    @property
+    def same_date(self):
+        return len(set((event.start_date for event in self.events))) == 1
+
+    @property
+    def same_time(self):
+        return len(set((event.start_time for event in self.events))) == 1
+
+    @property
+    def same_venue(self):
+        return len(set((event.venue for event in self.events))) == 1
+
+    @property
+    def emoji(self):
+        return category2emoji[self.categories] if self.categories else ""
+
+    @id.setter
+    def id(self, value):
+        if self.events:
+            self.events[0].id = value
+
+    @name.setter
+    def name(self, value):
+        for event in self.events:
+            event.name = value
+
+    @description.setter
+    def description(self, value):
+        for event in self.events:
+            event.description = value
+
+    @from_chat.setter
+    def from_chat(self, value):
+        for event in self.events:
+            event.from_chat = value
+
+    @telegram_link.setter
+    def telegram_link(self, value):
+        for event in self.events:
+            event.telegram_link = value
+
+    @event_type.setter
+    def event_type(self, value):
+        for event in self.events:
+            event.event_type = value
+
+    @categories.setter
+    def categories(self, value):
+        for event in self.events:
+            event.categories = value
 
     @publication_date.setter
     def publication_date(self, value):
@@ -503,60 +591,47 @@ class Calendar(Event):
                     raise BadEventAttrError("La data che hai inserito è passata! Inserisci una data futura:")
                 elif input_date > self.events[0].start_date:
                     raise BadEventAttrError("La data che hai inserito è successiva alla data dell'evento! Inserisci una data precedente:")
-                self._publication_date = input_date
+                for event in self.events:
+                    event.publication_date = input_date
         elif isinstance(value, datetime.date):
             if value > self.events[0].start_date:
                 raise BadEventAttrError("La data che hai inserito è successiva alla data dell'evento! Inserisci una data precedente:")
-            self._publication_date = value
+            for event in self.events:
+                event.publication_date = value
         else:
             raise BadEventAttrError(f"Start datetime should be of type {datetime.date} or {str}, not {type(value)}")
 
-    @name.setter
-    def name(self, value):
-        Event.name.fset(self, value)
+    @confirmed.setter
+    def confirmed(self, value):
         for event in self.events:
-            event.name = value
-
-    @description.setter
-    def description(self, value):
-        Event.description.fset(self, value)
-        for event in self.events:
-            event.description = value
-
-    @from_chat.setter
-    def from_chat(self, value):
-        Event.from_chat.fset(self, value)
-        for event in self.events:
-            event.from_chat = value
-
-    @telegram_link.setter
-    def telegram_link(self, value):
-        Event.telegram_link.fset(self, value)
-        for event in self.events:
-            event.telegram_link = value
-
-    @event_type.setter
-    def event_type(self, value):
-        Event.event_type.fset(self, value)
-        for event in self.events:
-            event.event_type = value
-
-    @categories.setter
-    def categories(self, value):
-        Event.categories.fset(self, value)
-        for event in self.events:
-            event.categories = value
+            event.confirmed = value
 
     def html(self):
         name = self.emoji + " " + self.name
 
         res_html = f"<code>{name}</code>\n"
 
-        for event in self.events:
-            start_datetime = event.start_datetime.strftime('%d.%m.%Y | %H:%M')
-            res_html += f"📅{start_datetime}"
-            res_html += f"""\n📍{event.venue}\n\n"""
+        if self.same_date and self.same_time:
+            start_datetime = self.events[0].start_datetime.strftime('%d.%m.%Y | %H:%M')
+            res_html += f"📅{start_datetime}\n"
+            for event in self.events:
+                res_html += f"""📍{event.venue}\n"""
+        else:
+            if self.same_venue:
+                for event in self.events:
+                    start_datetime = event.start_datetime.strftime('%d.%m.%Y | %H:%M')
+                    res_html += f"📅{start_datetime}\n"
+                res_html += f"""📍{event.venue}\n"""
+            else:
+                for event in self.events:
+                    start_datetime = event.start_datetime.strftime('%d.%m.%Y | %H:%M')
+                    res_html += f"📅{start_datetime}\n"
+                    res_html += f"""📍{event.venue}\n"""
+        res_html += '\n'
 
         description = html.escape(self.description)
         res_html += f"""{description}"""
         return res_html
+
+    def hash(self):
+        return str(hashlib.shake_128(self.name.encode()).hexdigest(5))

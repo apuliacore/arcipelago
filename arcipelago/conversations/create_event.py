@@ -7,7 +7,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler
 from telegram.ext.filters import Filters as F
 from arcipelago.config import notification_channel, authorized_users, chatbot_token
-from arcipelago.db import insert_event, set_confirmed, get_event_from_id
+from arcipelago.db import insert_event, set_confirmed, get_event_from_id, get_event_from_name
 from arcipelago.event import category2emoji, Event, Calendar, check_events_collision, BadEventAttrError
 from arcipelago.notification import check_event_will_get_published, publish_event
 from arcipelago.conversations import text
@@ -525,30 +525,30 @@ event_conv_handler = ConversationHandler(
         states={
             STORE_POSTER: [MessageHandler(F.photo, store_poster)],
             STORE_EVENT_NAME: [MessageHandler(F.text & (~ F.command), store_event_name)],
-            STORE_EVENT_TYPE: [MessageHandler(F.text, store_event_type)],
-            STORE_EVENT_VENUE: [MessageHandler(F.text, store_event_venue)],
+            STORE_EVENT_TYPE: [MessageHandler(F.text & (~ F.command), store_event_type)],
+            STORE_EVENT_VENUE: [MessageHandler(F.text & (~ F.command), store_event_venue)],
             ASK_START_DATE: [MessageHandler(F.text & (~ F.command), ask_start_date)],
-            ASK_START_TIME: [MessageHandler(F.text, ask_start_time)],
-            ROUTE_SAME_EVENT: [MessageHandler(F.text, route_same_event)],
-            ASK_ADD_END_DATE: [MessageHandler(F.text, ask_add_end_date)],
-            ASK_END_DATE: [MessageHandler(F.regex("Sì"), ask_end_date),
-                        MessageHandler(F.regex("No"), ask_add_end_time)],
-            STORE_END_DATE: [MessageHandler(F.text, store_end_date)],
-            ASK_END_TIME_PATH_END_DATE: [MessageHandler(F.text, ask_end_time_path_end_date)],
-            ASK_END_TIME_PATH_NO_END_DATE: [MessageHandler(F.regex("Sì"), ask_end_time_path_no_end_date),
-                          MessageHandler(F.regex("No"), ask_category_path_no_end_time)],
-            STORE_OPENING_HOURS: [MessageHandler(F.text, store_opening_hours)],
-            STORE_NUM_EVENTS: [MessageHandler(F.text, store_num_events)],
-            STORE_EVENT_VENUES_CALENDAR: [MessageHandler(F.text, store_event_venues_calendar)],
-            STORE_START_DATES_CALENDAR: [MessageHandler(F.text, store_start_dates_calendar)],
-            STORE_START_TIMES_CALENDAR: [MessageHandler(F.text, store_start_times_calendar)],
-            STORE_EVENTS_DURATION_CALENDAR: [MessageHandler(F.text, store_events_duration_calendar)],
-            ASK_CATEGORY_PATH_END_TIME: [MessageHandler(F.text, ask_category_path_end_time)],
+            ASK_START_TIME: [MessageHandler(F.text & (~ F.command), ask_start_time)],
+            ROUTE_SAME_EVENT: [MessageHandler(F.text & (~ F.command), route_same_event)],
+            ASK_ADD_END_DATE: [MessageHandler(F.text & (~ F.command), ask_add_end_date)],
+            ASK_END_DATE: [MessageHandler(F.regex("Sì") & (~ F.command), ask_end_date),
+                        MessageHandler(F.regex("No") & (~ F.command), ask_add_end_time)],
+            STORE_END_DATE: [MessageHandler(F.text & (~ F.command), store_end_date)],
+            ASK_END_TIME_PATH_END_DATE: [MessageHandler(F.text & (~ F.command), ask_end_time_path_end_date)],
+            ASK_END_TIME_PATH_NO_END_DATE: [MessageHandler(F.regex("Sì") & (~ F.command), ask_end_time_path_no_end_date),
+                          MessageHandler(F.regex("No") & (~ F.command), ask_category_path_no_end_time)],
+            STORE_OPENING_HOURS: [MessageHandler(F.text & (~ F.command), store_opening_hours)],
+            STORE_NUM_EVENTS: [MessageHandler(F.text & (~ F.command), store_num_events)],
+            STORE_EVENT_VENUES_CALENDAR: [MessageHandler(F.text & (~ F.command), store_event_venues_calendar)],
+            STORE_START_DATES_CALENDAR: [MessageHandler(F.text & (~ F.command), store_start_dates_calendar)],
+            STORE_START_TIMES_CALENDAR: [MessageHandler(F.text & (~ F.command), store_start_times_calendar)],
+            STORE_EVENTS_DURATION_CALENDAR: [MessageHandler(F.text & (~ F.command), store_events_duration_calendar)],
+            ASK_CATEGORY_PATH_END_TIME: [MessageHandler(F.text & (~ F.command), ask_category_path_end_time)],
             ASK_DESCRIPTION: [MessageHandler(F.text & (~ F.command), ask_description)],
             ASK_PUBLICATION_DATE: [MessageHandler(F.text & (~ F.command), ask_publication_date)],
             ASK_CONFIRM_SUBMISSION: [MessageHandler(F.text & (~ F.command), ask_confirm_submission)],
-            PROCESS_EVENT: [MessageHandler(F.regex("Sì"), process_submitted_event),
-                       MessageHandler(F.regex("No"), cancel)],
+            PROCESS_EVENT: [MessageHandler(F.regex("Sì") & (~ F.command), process_submitted_event),
+                       MessageHandler(F.regex("No") & (~ F.command), cancel)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
@@ -564,8 +564,16 @@ def set_event_confirmation(update, context) -> None:
     confirmed = bool(int(callback_data.split()[2]))
 
     if confirmed:
-        set_confirmed(event_id)
         event = Event().load_from_res(get_event_from_id(event_id)[0])
+        if event.event_type == 'Rassegna':
+            events = [Event().load_from_res(e) for e in get_event_from_name(event.name)]
+            for event in events:
+                set_confirmed(event.id)
+            calendar = Calendar()
+            calendar.events = events
+            event = calendar
+        else:
+            set_confirmed(event_id)
         update.callback_query.edit_message_text(text=f"Evento confermato da {admin.first_name} (@{admin.username}).")
         bot.sendMessage(chat_id=user_id, text=text.ack_event_accepted_user)
         bot.sendMessage(chat_id=user_id, text=f"Questo è il codice unico del tuo evento: <code>{event.hash()}</code>. "
@@ -573,13 +581,6 @@ def set_event_confirmation(update, context) -> None:
             parse_mode=telegram.ParseMode.HTML)
         if check_event_will_get_published(event) == False:
             publish_event(bot, event)
-
-        if event.event_type == 'Rassegna':
-            children_events = get_event_from_name(event.name)
-            for event_res in children_events:
-                event = Event().load_from_res(event_res)
-                set_confirmed(event.id)
-
     else:
         update.callback_query.edit_message_text(text=f"Evento non confermato da {admin.first_name} (@{admin.username}).")
         bot.sendMessage(chat_id=user_id, text=text.ack_event_not_accepted)

@@ -10,7 +10,7 @@ def get_next_hour_datetime(hour: int, minutes: int = 0):
     if hour in range(0, 24):
         now = datetime.datetime.now()
         now_time = now.time()
-        if now_time.hour < hour:
+        if now_time.hour <= hour:
             return datetime.datetime(now.year, now.month, now.day, hour, minutes)
         else:
             next_day = now + datetime.timedelta(days=1)
@@ -53,14 +53,11 @@ def publish_event(bot, event):
                     photo=open(f'locandine/{event.id}.jpg', 'rb'),
                     caption=event.html(),
                     parse_mode=telegram.ParseMode.HTML)
-    set_published(event.id)
-    original_event_id = event.id
     if event.event_type != 'Rassegna':
+        set_published(event.id)
         add_event_to_gcalendar(event)
     else:
-        children_events = get_event_from_name(event.name)
-        for event_res in children_events:
-            event = Event().load_from_res(event_res)
-            if event.id != original_event_id:
-                set_published(event.id)
-                add_event_to_gcalendar(event)
+        calendar = event
+        for event in calendar.events:
+            set_published(event.id)
+            add_event_to_gcalendar(event)
