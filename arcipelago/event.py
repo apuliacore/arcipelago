@@ -379,7 +379,10 @@ class Event(object):
             if self.end_datetime is not None:
                 res_html +=  f" - {end_datetime}"
             res_html += f"""\n📍{venue}\n"""
-            res_html += f"""<code>{name}</code>"""
+            if self.telegram_link is not None:
+                res_html += f"""<a href='{self.telegram_link}'>{name}</a>"""
+            else:
+                res_html += f"""<code>{name}</code>"""
 
         elif self.event_type == 'Esposizione':
             res_html = f"<code>{name}</code>\n"
@@ -435,6 +438,7 @@ class Event(object):
 class Calendar:
     def __init__(self):
         self.events = []
+        self._event_type = None
 
     @property
     def id(self):
@@ -524,6 +528,8 @@ class Calendar:
     def event_type(self):
         if self.events:
             return self.events[0].event_type
+        elif self._event_type is not None:
+            return self._event_type
         else:
             return None
 
@@ -570,8 +576,11 @@ class Calendar:
 
     @event_type.setter
     def event_type(self, value):
-        for event in self.events:
-            event.event_type = value
+        if self.events:
+            for event in self.events:
+                event.event_type = value
+        else:
+            self._event_type = value
 
     @categories.setter
     def categories(self, value):

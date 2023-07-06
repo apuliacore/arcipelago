@@ -4,7 +4,7 @@ no_event = "Sembra che non ci siano eventi registrati per oggi. Se vuoi puoi sug
 ack_canceled_op = "Ok, operazione annullata."
 
 # create event
-poster = "Bene! Per iniziare invia la locandina dell'evento. Invia /cancel in qualsiasi momento per interrompere la conversazione."
+ask_poster = "Bene! Per iniziare invia la locandina dell'evento. Invia /cancel in qualsiasi momento per interrompere la conversazione."
 ask_event_name = "Come si chiama l'evento?"
 ask_venue_name = "Ora inserisci il luogo dell'evento: [ad esempio: Teatro Petruzzelli, Bari]"
 ask_event_venues_calendar = "Inserisci i luoghi in cui si terranno gli eventi. Puoi inserire più luoghi separati da virgole oppure un solo luogo se tutti gli eventi si terranno nello stesso posto."

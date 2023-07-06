@@ -51,14 +51,11 @@ class MockBot:
 	def __init__(self, token):
 		pass
 
-
 	def sendMessage(self, chat_id, text, parse_mode=None, reply_markup=None):
 		print(text)
 
-
 	def send_photo(self, chat_id, photo, caption, parse_mode):
 		print(caption)
-
 
 	def get_file(self, file_id):
 		print(f"getting file {file_id}")

@@ -30,31 +30,9 @@ else:
     bot = MockBot(token=chatbot_token)
 
 
-def ask_poster(update, context) -> int:
-    """Starts adding an event asking for picture of event"""
-    update.message.reply_text(text.poster)
-    context.user_data['event'] = Event()
-    context.user_data['event'].from_chat = update.message.from_user.id
-    return STORE_POSTER
-
-
-def store_poster(update, context) -> int:
-    """Stores the photo and asks event name."""
-    photo_file = update.message.photo[-1].file_id
-    context.user_data['locandina'] = photo_file
-    update.message.reply_text(text.ask_event_name)
-    return STORE_EVENT_NAME
-
-
-def store_event_name(update, context) -> int:
-    """Stores event name and asks event type."""
-    try:
-        context.user_data['event'].name = update.message.text
-        update.message.reply_text(text.ask_event_type, reply_markup=K.event_type, parse_mode=telegram.ParseMode.HTML)
-        return STORE_EVENT_TYPE
-    except BadEventAttrError as e:
-        update.message.reply_text(str(e))
-        return STORE_EVENT_NAME
+def ask_event_type(update, context) -> int:
+    update.message.reply_text(text.ask_event_type, reply_markup=K.event_type, parse_mode=telegram.ParseMode.HTML)
+    return STORE_EVENT_TYPE
 
 
 def store_event_type(update, context) -> int:
@@ -64,19 +42,21 @@ def store_event_type(update, context) -> int:
         update.message.reply_text(text.help_event_type)
         return STORE_EVENT_TYPE
     else:
+        if user_input != 'Rassegna':
+            context.user_data['event'] = Event()
+        else:
+            context.user_data['event'] = Calendar()
         try:
             context.user_data['event'].event_type = user_input
+            context.user_data['event'].from_chat = update.message.from_user.id
         except BadEventAttrError as e:
             update.message.reply_text(str(e))
             return STORE_EVENT_TYPE
 
     if context.user_data['event'].event_type != 'Rassegna':
-        update.message.reply_text(text.ask_venue_name)
-        return STORE_EVENT_VENUE
+        update.message.reply_text(text.ask_poster)
+        return STORE_POSTER
     else:
-        calendar = Calendar()
-        context.user_data['old_event'] = context.user_data['event']
-        context.user_data['event'] = calendar
         update.message.reply_text(text.ask_num_events)
         return STORE_NUM_EVENTS
 
@@ -97,22 +77,37 @@ def store_num_events(update, context) -> int:
         return STORE_NUM_EVENTS
     else:
         context.user_data['event'].events = [Event() for _ in range(num_events)]
-        context.user_data['event'].from_chat = context.user_data['old_event'].from_chat
-        context.user_data['event'].name = context.user_data['old_event'].name
-        context.user_data['event'].event_type = context.user_data['old_event'].event_type
-        update.message.reply_text(text.ask_event_venues_calendar)
-        return STORE_EVENT_VENUES_CALENDAR
+        # we need to store events info when events exist
+        context.user_data['event'].event_type = context.user_data['event']._event_type
+        context.user_data['event'].from_chat = update.message.from_user.id
+        update.message.reply_text(text.ask_poster)
+        return STORE_POSTER
 
 
-def store_event_venue(update, context) -> int:
-    """Stores event venue and asks start date."""
+def store_poster(update, context) -> int:
+    """Stores the photo and asks event name."""
+    photo_file = update.message.photo[-1].file_id
+    context.user_data['locandina'] = photo_file
+    update.message.reply_text(text.ask_event_name)
+    return STORE_EVENT_NAME
+
+
+def store_event_name(update, context) -> int:
+    """Stores event name and asks event venue."""
     try:
-        context.user_data['event'].venue = update.message.text
+        context.user_data['event'].name = update.message.text
+        if context.user_data['event'].event_type == 'Rassegna':
+            update.message.reply_text(text.ask_event_venues_calendar)
+            return STORE_EVENT_VENUES_CALENDAR
+        else:
+            update.message.reply_text(text.ask_venue_name)
+            return STORE_EVENT_VENUE
     except BadEventAttrError as e:
         update.message.reply_text(str(e))
-        return STORE_EVENT_VENUE
-    update.message.reply_text(text.ask_start_date)
-    return ASK_START_TIME
+        return STORE_EVENT_NAME
+
+
+# START FUNCTIONS CALENDAR
 
 
 def store_event_venues_calendar(update, context) -> int:
@@ -140,27 +135,6 @@ def store_event_venues_calendar(update, context) -> int:
                 return STORE_EVENT_VENUES_CALENDAR
     update.message.reply_text(text.ask_start_dates_calendar)
     return STORE_START_DATES_CALENDAR
-
-
-def ask_start_date(update, context) -> int:
-    """Stores event type and ask start date."""
-    user_input = update.message.text.strip()
-    if user_input not in K.event_types:
-        update.message.reply_text(text.help_event_type)
-        return ASK_START_DATE
-    else:
-        try:
-            context.user_data['event'].event_type = user_input
-
-            if context.user_data['event'].event_type != 'Rassegna':
-                update.message.reply_text(text.ask_start_date)
-                return ASK_START_TIME
-            else:
-                update.message.reply_text(text.ask_num_events)
-                return STORE_NUM_EVENTS
-        except BadEventAttrError as e:
-            update.message.reply_text(str(e))
-            return ASK_START_DATE
 
 
 def store_start_dates_calendar(update, context) -> int:
@@ -254,6 +228,20 @@ def store_events_duration_calendar(update, context) -> int:
                 return STORE_EVENTS_DURATION_CALENDAR
     update.message.reply_text(text.ask_category, reply_markup=K.category)
     return ASK_DESCRIPTION
+
+
+def store_event_venue(update, context) -> int:
+    """Stores event venue and asks start date."""
+    try:
+        context.user_data['event'].venue = update.message.text
+    except BadEventAttrError as e:
+        update.message.reply_text(str(e))
+        return STORE_EVENT_VENUE
+    update.message.reply_text(text.ask_start_date)
+    return ASK_START_TIME
+
+
+# END FUNCTIONS CALENDAR
 
 
 def ask_start_time(update, context) -> int:
@@ -521,13 +509,12 @@ def cancel(update, context) -> int:
 
 
 event_conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("evento", ask_poster)],
+        entry_points=[CommandHandler("evento", ask_event_type)],
         states={
             STORE_POSTER: [MessageHandler(F.photo, store_poster)],
             STORE_EVENT_NAME: [MessageHandler(F.text & (~ F.command), store_event_name)],
             STORE_EVENT_TYPE: [MessageHandler(F.text & (~ F.command), store_event_type)],
             STORE_EVENT_VENUE: [MessageHandler(F.text & (~ F.command), store_event_venue)],
-            ASK_START_DATE: [MessageHandler(F.text & (~ F.command), ask_start_date)],
             ASK_START_TIME: [MessageHandler(F.text & (~ F.command), ask_start_time)],
             ROUTE_SAME_EVENT: [MessageHandler(F.text & (~ F.command), route_same_event)],
             ASK_ADD_END_DATE: [MessageHandler(F.text & (~ F.command), ask_add_end_date)],

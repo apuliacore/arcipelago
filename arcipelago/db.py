@@ -117,6 +117,10 @@ def set_confirmed(event_id: int):
 	execute_query("UPDATE event SET confirmed=True WHERE id=(?)", (event_id,))
 
 
+def set_event_link(event_id: int, event_link: str):
+	execute_query("UPDATE event SET telegram_link=(?) WHERE id=(?)", (event_link, event_id,))
+
+
 def get_id_last_added_in_table(table_name: str):
 	return execute_select_query("SELECT seq FROM sqlite_sequence WHERE name=(?)", (table_name,))
 
@@ -192,6 +196,7 @@ def execute_select_query(query, values):
 	res = cursor.execute(query, values).fetchall()
 	db_connection.close()
 	return res
+
 
 def get_db_version():
 	db_connection = get_connection()

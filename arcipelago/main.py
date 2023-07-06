@@ -35,7 +35,7 @@ def oggi(update, context) -> int:
     todays_events = [Event().load_from_res(e) for e in get_events_in_date(now)]
     if len(todays_events) > 0:
         update.message.reply_text("\n\n".join([f"Eventi di oggi {now.strftime('%d.%m.%Y')}"] + [event.html(short=True) for event in todays_events]),
-                                  parse_mode=telegram.ParseMode.HTML)
+                                  parse_mode=telegram.ParseMode.HTML, disable_web_page_preview=True)
     else:
         update.message.reply_text(text.no_event)
     return ConversationHandler.END

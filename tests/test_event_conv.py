@@ -4,12 +4,12 @@ from telegram.ext import ConversationHandler
 from mockups import MockUpdate, MockMessage, MockContext, MockUser
 from test_db import get_dummy_event
 from arcipelago.event import Event, Calendar
-from arcipelago.conversations.create_event import (ask_poster, store_poster, store_event_name, ask_start_date,
+from arcipelago.conversations.create_event import (store_poster, store_event_name,
 	ask_start_time, ask_add_end_date, route_same_event, ask_end_date, store_end_date, store_opening_hours,
 	store_event_venues_calendar, store_num_events, store_start_dates_calendar, store_start_times_calendar,
 	store_events_duration_calendar, ask_end_time_path_end_date, ask_category_path_end_time, ask_description,
 	ask_publication_date, ask_confirm_submission, process_submitted_event)
-from arcipelago.conversations.create_event import (STORE_POSTER, STORE_EVENT_NAME, STORE_EVENT_TYPE,
+from arcipelago.conversations.create_event import (STORE_POSTER, STORE_EVENT_NAME, STORE_EVENT_TYPE, STORE_EVENT_VENUE,
 	ASK_START_DATE, ASK_START_TIME, ASK_ADD_END_DATE, ROUTE_SAME_EVENT, ASK_END_DATE, ASK_END_TIME_PATH_END_DATE,
 	STORE_END_DATE, STORE_OPENING_HOURS, STORE_NUM_EVENTS, STORE_EVENT_VENUES_CALENDAR, STORE_START_DATES_CALENDAR,
 	STORE_START_TIMES_CALENDAR, STORE_EVENTS_DURATION_CALENDAR, ASK_CATEGORY_PATH_END_TIME, ASK_DESCRIPTION,
@@ -18,14 +18,6 @@ from arcipelago.config import chatbot_token, authorized_users
 
 
 NOW = datetime.datetime.now()
-
-
-def test_ask_poster():
-	# evento gets executed when the command /evento
-	# is sent to the bot. There's no special edge-case to test
-	update = MockUpdate(MockMessage())
-	context = MockContext()
-	assert ask_poster(update, context) == STORE_POSTER
 
 
 def test_store_poster():
@@ -72,8 +64,9 @@ def test_store_num_events():
 
 	# right value
 	update = MockUpdate(MockMessage('7'))
-	assert store_num_events(update, context) == STORE_EVENT_VENUES_CALENDAR
+	assert store_num_events(update, context) == STORE_POSTER
 	assert len(context.user_data['event'].events) == 7
+	# assert context.user_data['event'].event_type == 'Rassegna'
 
 
 def test_store_start_dates_calendar():
@@ -203,16 +196,12 @@ def test_store_events_duration_calendar():
 def test_store_event_name():
 	update = MockUpdate(MockMessage('nome evento'))
 	context = MockContext()
-	assert store_event_name(update, context) == STORE_EVENT_TYPE
+	assert store_event_name(update, context) == STORE_EVENT_VENUE
 
-
-def test_ask_start_date():
-	update = MockUpdate(MockMessage('Mostra'))
-	context = MockContext()
-	assert ask_start_date(update, context) == ASK_START_DATE
-
-	update = MockUpdate(MockMessage('Evento singolo'))
-	assert ask_start_date(update, context) == ASK_START_TIME
+	calendar = Calendar()
+	calendar.event_type = 'Rassegna'
+	context = MockContext(calendar)
+	assert store_event_name(update, context) == STORE_EVENT_VENUES_CALENDAR
 
 
 def test_ask_start_time():
